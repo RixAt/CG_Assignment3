@@ -9,6 +9,7 @@
 // | | | | | |  | || |    | |  | |  | ||  _| \___ \ 
 // | |_| | | |  | || |___ | |  | |  | || |___ ___) |
 //  \___/  |_| |___|_____|___| |_| |___|_____|____/ 
+// 
 // ====================================================================
 // File: utilities.hpp
 // Description to be added later
@@ -42,6 +43,15 @@ struct Vector3 {
 	// Dot product
 	float dot(const Vector3& v) const { return x * v.x, y* v.y, z* v.z; }
 	
+};
+
+// Enum (Class): RenderMode
+// Controls how objects are visually drawn in a scene
+// Used by draw() functions to switch between solid, wireframe, or vertex-only rebnderubg
+enum class RenderMode {
+	Solid,
+	Wireframe,
+	Vertices
 };
 
 
