@@ -136,15 +136,8 @@ void MyDisplay() {
 		return;
 	}
 
-	glColor3f(1.0, 0.0, 0.0); // R=1,G=0,B=0 -> red color
-	// drawing a square
-	glBegin(GL_POLYGON);
-	glVertex3f(-0.5, -0.5, 0.0);
-	glVertex3f(0.5, -0.5, 0.0);
-	glVertex3f(0.5, 0.5, 0.0);
-	glVertex3f(-0.5, 0.5, 0.0);
-	glEnd();
-	// end drawing
+
+
 	glFlush();
 	glutSwapBuffers(); // swap buffers 
 }
@@ -161,7 +154,7 @@ int main(int argc, char** argv) {
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitWindowSize(winW, winH); // window size
 	glutInitWindowPosition(0, 0);
-	glutCreateWindow("OpenGL Sample Drawing");
+	glutCreateWindow("OpenGL Sample Drawing"); // Rename window title
 
 	PrintInstructions();
 
