@@ -33,7 +33,7 @@ public:
 	virtual ~GameObject() = default;
 
 	virtual void update(float dt) = 0;
-	virtual void draw() const = 0;
+	virtual void draw(RenderMode mode) const = 0;
 
 	const Vector3& getPosition() const { return position; }
 	void setPosition(const Vector3& p) { position = p; }
