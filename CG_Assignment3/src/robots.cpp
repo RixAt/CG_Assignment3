@@ -48,6 +48,25 @@ void Robot::draw() const {
 	if (!alive) return; // Skip drawing if not alive
 
 	// This is where the robot object will be drawn
+
+	glPushMatrix();
+	glTranslatef(position.x, position.y, position.z);
+
+	glColor3f(color.x, color.y, color.z);
+
+	// Torso solid
+	glPushMatrix();
+	glScalef(5.0f, 8.0f, 3.0f);
+	glutSolidCube(1.0f);
+	glPopMatrix();
+
+	// Head solid
+	glPushMatrix();
+	glTranslatef(0.0f, 6.0f, 0.0f);
+	glutSolidSphere(2.0f, 16, 16);
+	glPopMatrix();
+
+	glPopMatrix();
 }
 
 void Robot::drawColliderDebug() const {

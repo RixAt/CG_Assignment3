@@ -29,6 +29,7 @@
 #include <GL/glut.h>
 #include <GL/freeglut_std.h>
 #include <iostream>
+#include "robots.hpp"
 
 // Window dimensions
 int winW = 640, winH = 480; // Must start with 640x480
@@ -47,6 +48,44 @@ static void Reshape(int w, int h);
 
 
 // ====================================================================
+
+// Testing robot object (remove before use)
+Robot g_robot;
+Robot g_robot_2(Vector3(0.0f, 0.0f, 3.0f), 10.0f);
+
+float camX = 0.0f;
+float camY = 20.0f;
+float camZ = 40.0f;
+float camYaw = 0.0f; // radians
+
+// Temp ground
+void drawGround() {
+	float s = 200.0f;
+
+	// solid ground quad
+	glColor3f(0.2f, 0.2f, 0.2f);
+	glBegin(GL_QUADS);
+	glVertex3f(-s, 0.0f, -s);
+	glVertex3f(s, 0.0f, -s);
+	glVertex3f(s, 0.0f, s);
+	glVertex3f(-s, 0.0f, s);
+	glEnd();
+
+	// grid lines to help visualize scale
+	glColor3f(0.3f, 0.3f, 0.3f);
+	glLineWidth(1.0f);
+	glBegin(GL_LINES);
+	for (float i = -s; i <= s; i += 10.0f) {
+		// lines parallel to Z
+		glVertex3f(i, 0.01f, -s);
+		glVertex3f(i, 0.01f, s);
+		// lines parallel to X
+		glVertex3f(-s, 0.01f, i);
+		glVertex3f(s, 0.01f, i);
+	}
+	glEnd();
+}
+
 
 static void PrintInstructions() {
 	std::cout << "Instructions:" << std::endl
@@ -127,6 +166,31 @@ static void SpecialInput(int key, int x, int y) {
 	}
 }
 
+// Temp camera
+void setCamera(int width, int height) {
+	// projection
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(
+		60.0,                      // fov
+		(float)width / (float)height,// aspect
+		1.0,                       // near
+		1000.0                     // far
+	);
+
+	// view (simple yaw around Y axis)
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	float lx = sinf(camYaw);
+	float lz = -cosf(camYaw);
+
+	gluLookAt(
+		camX, camY, camZ,          // camera pos
+		camX + lx, camY, camZ + lz,// look target
+		0.0f, 1.0f, 0.0f           // up
+	);
+}
 
 void MyDisplay() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -136,7 +200,27 @@ void MyDisplay() {
 		return;
 	}
 
+	setCamera(winW, winH);
 
+	glLineWidth(2.0f);
+	glBegin(GL_LINES);
+	// X red
+	glColor3f(1, 0, 0);
+	glVertex3f(0, 0, 0);
+	glVertex3f(20, 0, 0);
+	// Y green
+	glColor3f(0, 1, 0);
+	glVertex3f(0, 0, 0);
+	glVertex3f(0, 20, 0);
+	// Z blue
+	glColor3f(0, 0, 1);
+	glVertex3f(0, 0, 0);
+	glVertex3f(0, 0, 20);
+	glEnd();
+
+	drawGround();
+	g_robot.draw();
+	g_robot_2.draw();
 
 	glFlush();
 	glutSwapBuffers(); // swap buffers 
@@ -161,8 +245,6 @@ int main(int argc, char** argv) {
 	glEnable(GL_DEPTH_TEST); // Enable depth testing for 3D
 	glClearColor(0.0, 0.0, 0.0, 1.0); // clear the window screen
 	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
 
 	// Callback functions
 	glutDisplayFunc(MyDisplay);			// Call the drawing function
