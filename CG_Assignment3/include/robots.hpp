@@ -9,6 +9,7 @@
 // | |_) | | | |  _ \| | | || | \___ \ 
 // |  _ <| |_| | |_) | |_| || |  ___) |
 // |_| \_\\___/|____/ \___/ |_| |____/ 
+// 
 // ====================================================================
 // File: robots.hpp
 // Description: Header file for Robot class
@@ -18,29 +19,31 @@
 #define ROBOTS_HPP
 
 #include <GL/glut.h>
+#include "gameobject.hpp"
 #include "utilities.hpp"
 
-class Robot {
+class Robot : public GameObject {
+private:
+	float radius;		// Bounding sphere radius for collision detection
+	float animPhase;    // Animation phase
+	Vector3 color;      // Base color for rendering
+	bool alive;         // Is the robot alive in the scene?
 public:
 	Robot();
+	Robot(const Vector3& startPos, float r);
 
-	// Core behavior
-	void update();
-	void draw();
+	void update(float dt) override;
 
-	// Accessors
-	const Vector3& getPosition() const { return position; }
+	void draw() const override;
 
-	// Setters
-	void setPosition(const Vector3& pos) { position = pos; }
+	void drawColliderDebug() const;
 
+	bool checkHit(const Vector3& bulletPos, float bulletRadius) const;
 
-private: 
-	Vector3 position;
-	float radius;
-	float rotation;
+	void kill();
+	bool isAlive() const { return alive; }
+	float getRadius() const { return radius; }
 
-	Vector3 color;
 };
 
 

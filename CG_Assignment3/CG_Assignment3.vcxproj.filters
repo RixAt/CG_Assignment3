@@ -28,6 +28,9 @@
     <ClInclude Include="include\utilities.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\gameobject.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\bullet.cpp">
