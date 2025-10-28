@@ -140,6 +140,7 @@
     <ClInclude Include="include\gameobject.hpp" />
     <ClInclude Include="include\GL\freeglut_std.h" />
     <ClInclude Include="include\GL\glut.h" />
+    <ClInclude Include="include\render_util.hpp" />
     <ClInclude Include="include\robots.hpp" />
     <ClInclude Include="include\utilities.hpp" />
     <ClInclude Include="lib\freeglut.lib" />
@@ -147,6 +148,7 @@
   <ItemGroup>
     <ClCompile Include="src\bullet.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\render_util.cpp" />
     <ClCompile Include="src\robots.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

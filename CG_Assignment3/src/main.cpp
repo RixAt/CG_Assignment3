@@ -51,12 +51,14 @@ static void Reshape(int w, int h);
 
 // Testing robot object (remove before use)
 Robot g_robot;
-Robot g_robot_2(Vector3(0.0f, 0.0f, 3.0f), 10.0f);
+Robot g_robot_2(Vector3(0.0f, 10.0f, -30.0f), 10.0f);
 
 float camX = 0.0f;
 float camY = 20.0f;
 float camZ = 40.0f;
 float camYaw = 0.0f; // radians
+
+RenderMode g_rm = RenderMode::Solid;
 
 // Temp ground
 void drawGround() {
@@ -219,8 +221,8 @@ void MyDisplay() {
 	glEnd();
 
 	drawGround();
-	g_robot.draw();
-	g_robot_2.draw();
+	g_robot.draw(g_rm);
+	g_robot_2.draw(g_rm);
 
 	glFlush();
 	glutSwapBuffers(); // swap buffers 
