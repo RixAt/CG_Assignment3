@@ -23,7 +23,7 @@
 #include "render_util.hpp"
 
 
-void DrawCube(RenderMode mode, float size = 1.0f) {
+void DrawCube(RenderMode mode, float size) {
 	glPushAttrib(GL_CURRENT_BIT | GL_POLYGON_BIT | GL_POINT_BIT | GL_ENABLE_BIT | GL_LINE_BIT);
 
 	switch (mode) {
@@ -44,7 +44,7 @@ void DrawCube(RenderMode mode, float size = 1.0f) {
 	glPopAttrib();
 }
 
-void DrawSphere(RenderMode mode, float radius = 1.0f) {
+void DrawSphere(RenderMode mode, float radius) {
 	glPushAttrib(GL_CURRENT_BIT | GL_POLYGON_BIT | GL_POINT_BIT | GL_ENABLE_BIT | GL_LINE_BIT);
 
 	switch (mode) {
