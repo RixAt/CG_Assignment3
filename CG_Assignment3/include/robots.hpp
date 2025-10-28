@@ -21,6 +21,7 @@
 #include <GL/glut.h>
 #include "gameobject.hpp"
 #include "utilities.hpp"
+#include "render_util.hpp"
 
 class Robot : public GameObject {
 private:
@@ -28,13 +29,19 @@ private:
 	float animPhase;    // Animation phase
 	Vector3 color;      // Base color for rendering
 	bool alive;         // Is the robot alive in the scene?
+
+	// Body part helpers
+	void drawTorso(RenderMode mode) const;
+	void drawHead(RenderMode mode)  const;
+	void drawArm(RenderMode mode, bool isLeftSide) const;
+	void drawLeg(RenderMode mode, bool isLeftSide) const;
 public:
 	Robot();
 	Robot(const Vector3& startPos, float r);
 
 	void update(float dt) override;
 
-	void draw() const override;
+	void draw(RenderMode mode) const override;
 
 	void drawColliderDebug() const;
 
