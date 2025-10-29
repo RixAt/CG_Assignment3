@@ -118,28 +118,8 @@ static void KeyboardInput(unsigned char key, int x, int y) {
 	if (debugPrint) {
 		std::cout << "[Debug][KeyboardInput] Key pressed: " << key << " at (" << x << ", " << y << ")" << std::endl;
 	}
+	game.handleKey(key);
 
-	switch (key) {
-	case 27: // ESC key
-		exit(0);
-		break;
-	case '`':
-	case '~':
-		debugPrint = !debugPrint;
-		std::cout << "Debug print " << (debugPrint ? "enabled" : "disabled") << std::endl;
-		break;
-	case 'I':
-	case 'i':
-		PrintInstructions();
-		break;
-	case 'C':
-	case 'c':
-		clearScreen = !clearScreen;
-		glutPostRedisplay();
-		break;
-	default:
-		break;
-	}
 }
 
 static void SpecialInput(int key, int x, int y) {
@@ -239,6 +219,12 @@ static void Reshape(int w, int h) {
 	glutPostRedisplay();
 }
 
+void Timer(int value) {
+	game.update(0.016f); // Approx. 60 FPS
+	glutPostRedisplay();
+	glutTimerFunc(16, Timer, 0);
+}
+
 int main(int argc, char** argv) {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
@@ -259,6 +245,8 @@ int main(int argc, char** argv) {
 	glutReshapeFunc(Reshape);			// Call the reshape function
 	glutKeyboardFunc(KeyboardInput);	// Call the keyboard function
 	glutSpecialFunc(SpecialInput);		// Call the special keyboard function
+
+	glutTimerFunc(16, Timer, 0);
 
 	glutMainLoop();
 	return 0;
