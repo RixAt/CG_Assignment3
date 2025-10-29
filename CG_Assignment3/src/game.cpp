@@ -125,5 +125,26 @@ void Game::handleKey(unsigned char key) {
 };
 
 void Game::handleSpecialKey(int key) {
-
+	switch (key) {
+	case GLUT_KEY_F1:
+		// Toggle fullscreen
+		break;
+	case GLUT_KEY_F2:
+		// Toggle view mode
+		break;
+	case GLUT_KEY_UP:
+		// Move camera forward
+		break;
+	case GLUT_KEY_DOWN:
+		// Move camera backward
+		break;
+	case GLUT_KEY_LEFT:
+		// Rotate camera left
+		break;
+	case GLUT_KEY_RIGHT:
+		// Rotate camera right
+		break;
+	default:
+		break;
+	}
 };	
