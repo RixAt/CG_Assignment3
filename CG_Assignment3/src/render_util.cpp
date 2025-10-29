@@ -63,3 +63,35 @@ void DrawSphere(RenderMode mode, float radius) {
 
 	glPopAttrib();
 }
+
+void DrawPlane(RenderMode mode, float width, float depth, const Vector3& color) {
+	glColor3f(color.x, color.y, color.z);
+	float w = width / 2.0f;
+	float d = depth / 2.0f;
+
+	glBegin(GL_QUADS);
+		glVertex3f(-w, 0.0f, -d);
+		glVertex3f(w, 0.0f, -d);
+		glVertex3f(w, 0.0f, d);
+		glVertex3f(-w, 0.0f, d);
+	glEnd();
+}
+
+void DrawGround(float size, float spacing) {
+	// Solid ground quad
+	DrawPlane(RenderMode::Solid, size, size, Vector3(0.2f, 0.2f, 0.2f));
+
+	// Adding grid lines to help visualize scale
+	glColor3f(0.3f, 0.3f, 0.3f);
+	glLineWidth(1.0f);
+	glBegin(GL_LINES);
+	for (float i = -size / 2.0f; i <= size / 2.0f; i += spacing) {
+		// lines parallel to Z
+		glVertex3f(i, 0.01f, -size / 2.0f);
+		glVertex3f(i, 0.01f, size / 2.0f);
+		// lines parallel to X
+		glVertex3f(-size / 2.0f, 0.01f, i);
+		glVertex3f(size / 2.0f, 0.01f, i);
+	}
+	glEnd();
+}

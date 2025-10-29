@@ -29,5 +29,8 @@
 
 void DrawCube(RenderMode mode, float size = 1.0f);
 void DrawSphere(RenderMode mode, float radius = 1.0f);
+void DrawPlane(RenderMode mode, float width, float depth, const Vector3& color);
+
+void DrawGround(float size = 200.0f, float spacing = 10.0f);
 
 #endif //RENDER_UTIL_HPP
