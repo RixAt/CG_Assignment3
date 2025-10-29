@@ -18,9 +18,11 @@
 
 #include "robots.hpp"
 
+static const float ROBOT_COLLIDER_RADIUS = 20.0f;
+
 Robot::Robot()
 	: GameObject(Vector3(0.0f, 0.0f, 0.0f)),
-	radius(10.0f),
+	radius(ROBOT_COLLIDER_RADIUS),
 	animPhase(0.0f),
 	color(0.8f, 0.1f, 0.1f),
 	alive(true)

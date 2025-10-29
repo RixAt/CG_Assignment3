@@ -45,7 +45,7 @@ void Game::init() {
 		float z = (std::rand() % 200 - 100);
 		Vector3 spawnPos(x, 0.0f, z);
 
-		robots.push_back(new Robot(spawnPos, 10.0f));
+		robots.push_back(new Robot(spawnPos, 12.0f));
 	}
 	
 }
