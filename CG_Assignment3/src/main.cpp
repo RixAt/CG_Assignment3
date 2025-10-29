@@ -30,9 +30,11 @@
 #include <GL/freeglut_std.h>
 #include <iostream>
 #include "robots.hpp"
+#include "game.hpp"
 
 // Window dimensions
 int winW = 640, winH = 480; // Must start with 640x480
+Game game;
 
 bool clearScreen = false; // Toggle to clear the screen
 bool debugPrint = true; // Toggle to print debug information
@@ -61,32 +63,32 @@ float camYaw = 0.0f; // radians
 RenderMode g_rm = RenderMode::Solid;
 
 // Temp ground
-void drawGround() {
-	float s = 200.0f;
-
-	// solid ground quad
-	glColor3f(0.2f, 0.2f, 0.2f);
-	glBegin(GL_QUADS);
-	glVertex3f(-s, 0.0f, -s);
-	glVertex3f(s, 0.0f, -s);
-	glVertex3f(s, 0.0f, s);
-	glVertex3f(-s, 0.0f, s);
-	glEnd();
-
-	// grid lines to help visualize scale
-	glColor3f(0.3f, 0.3f, 0.3f);
-	glLineWidth(1.0f);
-	glBegin(GL_LINES);
-	for (float i = -s; i <= s; i += 10.0f) {
-		// lines parallel to Z
-		glVertex3f(i, 0.01f, -s);
-		glVertex3f(i, 0.01f, s);
-		// lines parallel to X
-		glVertex3f(-s, 0.01f, i);
-		glVertex3f(s, 0.01f, i);
-	}
-	glEnd();
-}
+//void drawGround() {
+//	float s = 200.0f;
+//
+//	// solid ground quad
+//	glColor3f(0.2f, 0.2f, 0.2f);
+//	glBegin(GL_QUADS);
+//	glVertex3f(-s, 0.0f, -s);
+//	glVertex3f(s, 0.0f, -s);
+//	glVertex3f(s, 0.0f, s);
+//	glVertex3f(-s, 0.0f, s);
+//	glEnd();
+//
+//	// grid lines to help visualize scale
+//	glColor3f(0.3f, 0.3f, 0.3f);
+//	glLineWidth(1.0f);
+//	glBegin(GL_LINES);
+//	for (float i = -s; i <= s; i += 10.0f) {
+//		// lines parallel to Z
+//		glVertex3f(i, 0.01f, -s);
+//		glVertex3f(i, 0.01f, s);
+//		// lines parallel to X
+//		glVertex3f(-s, 0.01f, i);
+//		glVertex3f(s, 0.01f, i);
+//	}
+//	glEnd();
+//}
 
 
 static void PrintInstructions() {
@@ -195,37 +197,39 @@ void setCamera(int width, int height) {
 }
 
 void MyDisplay() {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	if (clearScreen) {
-		glutSwapBuffers();
-		return;
-	}
+	//if (clearScreen) {
+	//	glutSwapBuffers();
+	//	return;
+	//}
 
-	setCamera(winW, winH);
+	//setCamera(winW, winH);
 
-	glLineWidth(2.0f);
-	glBegin(GL_LINES);
-	// X red
-	glColor3f(1, 0, 0);
-	glVertex3f(0, 0, 0);
-	glVertex3f(20, 0, 0);
-	// Y green
-	glColor3f(0, 1, 0);
-	glVertex3f(0, 0, 0);
-	glVertex3f(0, 20, 0);
-	// Z blue
-	glColor3f(0, 0, 1);
-	glVertex3f(0, 0, 0);
-	glVertex3f(0, 0, 20);
-	glEnd();
+	//glLineWidth(2.0f);
+	//glBegin(GL_LINES);
+	//// X red
+	//glColor3f(1, 0, 0);
+	//glVertex3f(0, 0, 0);
+	//glVertex3f(20, 0, 0);
+	//// Y green
+	//glColor3f(0, 1, 0);
+	//glVertex3f(0, 0, 0);
+	//glVertex3f(0, 20, 0);
+	//// Z blue
+	//glColor3f(0, 0, 1);
+	//glVertex3f(0, 0, 0);
+	//glVertex3f(0, 0, 20);
+	//glEnd();
 
-	drawGround();
-	g_robot.draw(g_rm);
-	g_robot_2.draw(g_rm);
+	//drawGround();
+	//g_robot.draw(g_rm);
+	//g_robot_2.draw(g_rm);
 
-	glFlush();
-	glutSwapBuffers(); // swap buffers 
+	//glFlush();
+	//glutSwapBuffers(); // swap buffers 
+
+	game.draw(winW, winH);
 }
 
 static void Reshape(int w, int h) {
@@ -246,7 +250,9 @@ int main(int argc, char** argv) {
 
 	glEnable(GL_DEPTH_TEST); // Enable depth testing for 3D
 	glClearColor(0.0, 0.0, 0.0, 1.0); // clear the window screen
-	glMatrixMode(GL_PROJECTION);
+	//glMatrixMode(GL_PROJECTION);
+
+	game.init();
 
 	// Callback functions
 	glutDisplayFunc(MyDisplay);			// Call the drawing function
