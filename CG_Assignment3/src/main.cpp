@@ -236,7 +236,6 @@ int main(int argc, char** argv) {
 
 	glEnable(GL_DEPTH_TEST); // Enable depth testing for 3D
 	glClearColor(0.0, 0.0, 0.0, 1.0); // clear the window screen
-	//glMatrixMode(GL_PROJECTION);
 
 	game.init();
 
