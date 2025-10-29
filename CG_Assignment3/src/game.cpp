@@ -79,6 +79,8 @@ void Game::draw(int winW, int winH) const {
 		cameraPos.x + lx, cameraPos.y, cameraPos.z + lz,
 		0.0, 1.0, 0.0);
 
+	DrawGround();
+
 	for (const auto& r : robots) {
 		r->draw(g_renderMode);
 

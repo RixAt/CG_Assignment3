@@ -19,6 +19,7 @@
 #include "robots.hpp"
 
 static const float ROBOT_COLLIDER_RADIUS = 20.0f;
+static const float ROBOT_MODEL_Y_OFFSET = 11.5f; // Offset to position model above ground
 
 Robot::Robot()
 	: GameObject(Vector3(0.0f, 0.0f, 0.0f)),
@@ -113,6 +114,7 @@ void Robot::draw(RenderMode mode) const {
 
 	glPushMatrix();
 		glTranslatef(position.x, position.y, position.z);
+		glTranslatef(0.0f, ROBOT_MODEL_Y_OFFSET, 0.0f);
 
 		switch (mode) {
 		case RenderMode::Wireframe:
@@ -142,6 +144,7 @@ void Robot::drawColliderDebug() const {
 	if (!alive) return; // Skip drawing if not alive
 	glPushMatrix();
 		glTranslatef(position.x, position.y, position.z);
+		glTranslatef(0.0f, ROBOT_MODEL_Y_OFFSET, 0.0f);
 		glColor3f(0.0f, 1.0f, 1.0f);
 		glutWireSphere(radius, 16, 16);
 	glPopMatrix();
