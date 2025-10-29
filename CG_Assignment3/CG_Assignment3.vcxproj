@@ -110,12 +110,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>./include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\include;./include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>./lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>./lib;$(ProjectDir)\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>freeglut.lib;OpenGl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -127,22 +127,31 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>./include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\include;./include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>./lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>./lib;$(ProjectDir)\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>freeglut.lib;OpenGl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
+    <ClInclude Include="include\game.hpp" />
+    <ClInclude Include="include\gameobject.hpp" />
     <ClInclude Include="include\GL\freeglut_std.h" />
     <ClInclude Include="include\GL\glut.h" />
-	<ClInclude Include="lib\freeglut.lib" />
+    <ClInclude Include="include\render_util.hpp" />
+    <ClInclude Include="include\robots.hpp" />
+    <ClInclude Include="include\utilities.hpp" />
+    <ClInclude Include="lib\freeglut.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\bullet.cpp" />
+    <ClCompile Include="src\game.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\render_util.cpp" />
+    <ClCompile Include="src\robots.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

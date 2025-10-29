@@ -1,0 +1,161 @@
+// ====================================================================
+/* Assignment 3: Robot Hunter
+   Ricky Atkinson
+   Computer Graphics, Fall 2025
+   Kent State University                                             */
+// ====================================================================
+//   ____    _    __  __ _____ 
+//  / ___|  / \  |  \/  | ____|
+// | |  _  / _ \ | |\/| |  _|  
+// | |_| |/ ___ \| |  | | |___ 
+//  \____/_/   \_\_|  |_|_____|
+// 
+// ====================================================================
+// File: game.cpp
+// Description: 
+// 
+// ====================================================================
+
+#include "game.hpp"
+#include <cmath>
+#include <cstdlib>
+#include <ctime>
+
+using namespace std;
+
+Game::Game()
+	: cameraPos(0.0f, 5.0f, 15.0f), 
+	cameraYaw(0.0f),
+	g_renderMode(RenderMode::Solid),
+	showAxes(true),
+	showColliders(false),
+	motionEnabled(true)
+{
+	
+}
+
+// Initialize game state
+void Game::init() {
+	srand(time(nullptr));
+	robots.clear();
+
+	// Spawns ten robots at random XY positions on ground plane
+	for (int i = 0; i < 10; ++i) {
+		float x = (std::rand() % 200 - 100);
+		float z = (std::rand() % 200 - 100);
+		Vector3 spawnPos(x, 0.0f, z);
+
+		robots.push_back(new Robot(spawnPos, 12.0f));
+	}
+	
+}
+
+// Update game state
+// dt in seconds
+void Game::update(float dt) {
+	if (!motionEnabled) return;
+
+	for (auto& r : robots) {
+		r->update(dt);
+	}
+}
+
+// Draw the game scene
+void Game::draw(int winW, int winH) const {
+	// Draw game objects here
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(60.0, (float)winW / (float)winH, 0.1, 1000.0);
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	float lx = std::sinf(cameraYaw);
+	float lz = -std::cosf(cameraYaw);
+
+	gluLookAt(cameraPos.x, cameraPos.y, cameraPos.z,
+		cameraPos.x + lx, cameraPos.y, cameraPos.z + lz,
+		0.0, 1.0, 0.0);
+
+	DrawGround();
+
+	for (const auto& r : robots) {
+		r->draw(g_renderMode);
+
+		if (showColliders) {
+			r->drawColliderDebug();
+		}
+	}
+
+	glutSwapBuffers();
+}
+
+void Game::handleKey(unsigned char key) {
+	switch (key) {
+	case 27: // ESC key
+		exit(0);
+		break;
+	case 'w':
+	case 'W':
+		g_renderMode = RenderMode::Wireframe;
+		glutPostRedisplay();
+		break;
+	case 's':
+	case 'S':
+		g_renderMode = RenderMode::Solid;
+		glutPostRedisplay();
+		break;
+	case 'v':
+	case 'V':
+		g_renderMode = RenderMode::Vertices;
+		glutPostRedisplay();
+		break;
+	case 'a':
+	case 'A':
+		showAxes = !showAxes;
+		glutPostRedisplay();
+		break;
+	case 'c':
+	case 'C':
+		showColliders = !showColliders;
+		glutPostRedisplay();
+		break;
+	case 'i':
+	case 'I':
+		// Print instructions
+		break;
+	default:
+		break;
+	}
+};
+
+void Game::handleSpecialKey(int key) {
+	switch (key) {
+	case GLUT_KEY_F1:
+		// Toggle fullscreen
+		break;
+	case GLUT_KEY_F2:
+		// Toggle view mode
+		break;
+	case GLUT_KEY_UP:
+		// Move camera forward
+		glutPostRedisplay();
+		break;
+	case GLUT_KEY_DOWN:
+		// Move camera backward
+		glutPostRedisplay();
+		break;
+	case GLUT_KEY_LEFT:
+		// Rotate camera left
+		glutPostRedisplay();
+		break;
+	case GLUT_KEY_RIGHT:
+		// Rotate camera right
+		glutPostRedisplay();
+		break;
+	default:
+		break;
+	}
+};	
