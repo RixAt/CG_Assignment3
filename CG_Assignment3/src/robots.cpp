@@ -138,6 +138,11 @@ void Robot::draw(RenderMode mode) const {
 
 void Robot::drawColliderDebug() const {
 	if (!alive) return; // Skip drawing if not alive
+	glPushMatrix();
+		glTranslatef(position.x, position.y, position.z);
+		glColor3f(0.0f, 1.0f, 1.0f);
+		glutWireSphere(radius, 16, 16);
+	glPopMatrix();
 }
 
 bool Robot::checkHit(const Vector3 &bulletPos, float bulletRadius) const{

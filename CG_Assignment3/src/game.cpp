@@ -98,22 +98,27 @@ void Game::handleKey(unsigned char key) {
 	case 'w':
 	case 'W':
 		g_renderMode = RenderMode::Wireframe;
+		glutPostRedisplay();
 		break;
 	case 's':
 	case 'S':
 		g_renderMode = RenderMode::Solid;
+		glutPostRedisplay();
 		break;
 	case 'v':
 	case 'V':
 		g_renderMode = RenderMode::Vertices;
+		glutPostRedisplay();
 		break;
 	case 'a':
 	case 'A':
 		showAxes = !showAxes;
+		glutPostRedisplay();
 		break;
 	case 'c':
 	case 'C':
 		showColliders = !showColliders;
+		glutPostRedisplay();
 		break;
 	case 'i':
 	case 'I':
@@ -134,15 +139,19 @@ void Game::handleSpecialKey(int key) {
 		break;
 	case GLUT_KEY_UP:
 		// Move camera forward
+		glutPostRedisplay();
 		break;
 	case GLUT_KEY_DOWN:
 		// Move camera backward
+		glutPostRedisplay();
 		break;
 	case GLUT_KEY_LEFT:
 		// Rotate camera left
+		glutPostRedisplay();
 		break;
 	case GLUT_KEY_RIGHT:
 		// Rotate camera right
+		glutPostRedisplay();
 		break;
 	default:
 		break;
