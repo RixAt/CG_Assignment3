@@ -46,6 +46,9 @@ public:
 	void update(float dt);
 	void draw(int winW, int winH) const;
 
+	// Keyboard input handling
+	void handleKey(unsigned char key);
+	void handleSpecialKey(int key);
 
 
 };

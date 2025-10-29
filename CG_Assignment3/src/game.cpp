@@ -89,3 +89,41 @@ void Game::draw(int winW, int winH) const {
 
 	glutSwapBuffers();
 }
+
+void Game::handleKey(unsigned char key) {
+	switch (key) {
+	case 27: // ESC key
+		exit(0);
+		break;
+	case 'w':
+	case 'W':
+		g_renderMode = RenderMode::Wireframe;
+		break;
+	case 's':
+	case 'S':
+		g_renderMode = RenderMode::Solid;
+		break;
+	case 'v':
+	case 'V':
+		g_renderMode = RenderMode::Vertices;
+		break;
+	case 'a':
+	case 'A':
+		showAxes = !showAxes;
+		break;
+	case 'c':
+	case 'C':
+		showColliders = !showColliders;
+		break;
+	case 'i':
+	case 'I':
+		// Print instructions
+		break;
+	default:
+		break;
+	}
+};
+
+void Game::handleSpecialKey(int key) {
+
+};	
