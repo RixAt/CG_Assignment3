@@ -94,7 +94,7 @@ void Camera::elevate(float amount) {
 }
 
 void Camera::turnLeft(float amount) {
-	yaw -= amount;
+	yaw += amount;
 }
 void Camera::turnRight(float amount) {
 	turnLeft(-amount);

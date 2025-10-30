@@ -24,9 +24,7 @@
 using namespace std;
 
 Game::Game()
-	: cameraPos(0.0f, 5.0f, 15.0f), 
-	cameraYaw(0.0f),
-	g_renderMode(RenderMode::Solid),
+	: g_renderMode(RenderMode::Solid),
 	showAxes(true),
 	showColliders(false),
 	motionEnabled(true)
@@ -72,12 +70,14 @@ void Game::draw(int winW, int winH) const {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	float lx = std::sinf(cameraYaw);
+	/*float lx = std::sinf(cameraYaw);
 	float lz = -std::cosf(cameraYaw);
 
 	gluLookAt(cameraPos.x, cameraPos.y, cameraPos.z,
 		cameraPos.x + lx, cameraPos.y, cameraPos.z + lz,
-		0.0, 1.0, 0.0);
+		0.0, 1.0, 0.0);*/
+
+	camera.applyView(winW, winH);
 
 	DrawGround();
 
@@ -138,21 +138,27 @@ void Game::handleSpecialKey(int key) {
 		break;
 	case GLUT_KEY_F2:
 		// Toggle view mode
+		// NOT WORKING YET
+		//camera.toggleMode();
 		break;
 	case GLUT_KEY_UP:
 		// Move camera forward
+		camera.moveForward(camera.moveSpeed);
 		glutPostRedisplay();
 		break;
 	case GLUT_KEY_DOWN:
 		// Move camera backward
+		camera.moveBackward(camera.moveSpeed);
 		glutPostRedisplay();
 		break;
 	case GLUT_KEY_LEFT:
 		// Rotate camera left
+		camera.turnLeft(camera.turnSpeed);
 		glutPostRedisplay();
 		break;
 	case GLUT_KEY_RIGHT:
 		// Rotate camera right
+		camera.turnRight(camera.turnSpeed);
 		glutPostRedisplay();
 		break;
 	default:
