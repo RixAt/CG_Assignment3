@@ -89,6 +89,8 @@ void Game::draw(int winW, int winH) const {
 		}
 	}
 
+	DrawCameraMarker(camera);
+
 	glutSwapBuffers();
 }
 
