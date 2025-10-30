@@ -67,6 +67,10 @@ public:
 	void setFPVAnchor(const Vector3* anchor);
 	void setFPVEyeHeight(float height);
 
+	Vector3 getPosition() const { return position; }
+	float getYaw() const { return yaw; }
+	float getPitch() const { return pitch; }
+
 private:
 
 };
