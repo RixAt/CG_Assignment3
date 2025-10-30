@@ -25,12 +25,17 @@
 
 #include <GL/glut.h>
 #include "utilities.hpp"
+#include "camera.hpp"
 
-
+// Primitive geometry drawing functions
 void DrawCube(RenderMode mode, float size = 1.0f);
 void DrawSphere(RenderMode mode, float radius = 1.0f);
 void DrawPlane(RenderMode mode, float width, float depth, const Vector3& color);
 
+// Draw a ground plane with grid lines
 void DrawGround(float size = 200.0f, float spacing = 10.0f);
+//
+void DrawCameraMarker(const Camera& cam);
+
 
 #endif //RENDER_UTIL_HPP

@@ -23,6 +23,7 @@
 #include "utilities.hpp"
 #include "render_util.hpp"
 #include "robots.hpp"
+#include "camera.hpp"
 
 
 class Game {
@@ -31,8 +32,10 @@ public:
 	std::vector<Robot*> robots;
 
 	// Temporary camera
-	Vector3 cameraPos;
-	float cameraYaw;
+	/*Vector3 cameraPos;
+	float cameraYaw;*/
+
+	Camera camera;
 
 	// Rendering state
 	RenderMode g_renderMode;
