@@ -37,7 +37,7 @@ int winW = 640, winH = 480; // Must start with 640x480
 Game game;
 
 bool clearScreen = false; // Toggle to clear the screen
-bool debugPrint = true; // Toggle to print debug information
+bool debugPrint = false; // Toggle to print debug information
 
 // ====================================================================
 // Forward declarations

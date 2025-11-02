@@ -72,13 +72,6 @@ void Game::draw(int winW, int winH) const {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	/*float lx = std::sinf(cameraYaw);
-	float lz = -std::cosf(cameraYaw);
-
-	gluLookAt(cameraPos.x, cameraPos.y, cameraPos.z,
-		cameraPos.x + lx, cameraPos.y, cameraPos.z + lz,
-		0.0, 1.0, 0.0);*/
-
 	cams.renderCam->applyView(winW, winH);
 
 	DrawGround();
@@ -91,7 +84,21 @@ void Game::draw(int winW, int winH) const {
 		}
 	}
 
-	//DrawCameraMarker(camera);
+	const float aspect = (winH > 0) ? (float)winW / (float)winH : 1.0f;
+
+	if (cams.renderCam != &cams.cameraFPV) {
+		DrawCameraFrustum(cams.cameraFPV, aspect, 0.5f, Vector3(1.0f, 0.5f, 0.0f));
+		DrawCameraMarker(cams.cameraFPV, 1.5f, Vector3(1.0f, 0.5f, 0.0f));
+	}
+    if (cams.renderCam != &cams.cameraESV) {
+		DrawCameraMarker(cams.cameraESV, 1.3f, Vector3(0.2f, 0.7f, 1.0f));
+		DrawCameraFrustum(cams.cameraESV, aspect, 1.0f, Vector3(0.2f, 0.7f, 1.0f));
+	}
+
+	if (cams.renderCam != &cams.cameraFree) {
+		DrawCameraFrustum(cams.cameraFree, aspect, 0.5f, Vector3(0.5f, 1.0f, 0.5f));
+		DrawCameraMarker(cams.cameraFree, 1.5f, Vector3(0.5f, 1.0f, 0.5f));
+	}
 
 	glutSwapBuffers();
 }
@@ -167,6 +174,10 @@ void Game::handleSpecialKey(int key) {
 	case GLUT_KEY_F2:
 		// Toggle view mode
 		cams.toggleFPV_ESV();
+		if (cams.controlCam == &cams.cameraFree) {
+			cams.controlCam = cams.renderCam;
+		}
+		
 		glutPostRedisplay();
 		break;
 	case GLUT_KEY_UP:

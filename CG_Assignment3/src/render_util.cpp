@@ -118,3 +118,82 @@ void DrawGround(float size, float spacing) {
 //
 //	glPopMatrix();
 //}
+
+void DrawCameraMarker(const Camera& cam, float size, const Vector3& color) {
+	Vector3 eye, right, up, forward;
+	cam.getEyeBasis(eye, right, up, forward);
+
+	const Vector3 tip = eye + forward * (size * 1.5f);
+	const Vector3 baseLeft = eye - right * (size * 0.6f) - up * (size * 0.3f);
+	const Vector3 baseRight = eye + right * (size * 0.6f) - up * (size * 0.3f);
+	const Vector3 baseUp = eye + up * (size * 0.6f);
+	const Vector3 baseDown = eye - up * (size * 0.6f);
+
+	//glDisable(GL_LIGHTING);
+	glLineWidth(1.5f);
+	glColor3f(color.x, color.y, color.z);
+	glBegin(GL_LINES);
+	glVertex3f(baseLeft.x, baseLeft.y, baseLeft.z); glVertex3f(tip.x, tip.y, tip.z);
+	glVertex3f(baseRight.x, baseRight.y, baseRight.z); glVertex3f(tip.x, tip.y, tip.z);
+	glVertex3f(baseUp.x, baseUp.y, baseUp.z); glVertex3f(tip.x, tip.y, tip.z);
+	glVertex3f(baseDown.x, baseDown.y, baseDown.z); glVertex3f(tip.x, tip.y, tip.z);
+
+	glVertex3f(baseLeft.x, baseLeft.y, baseLeft.z); glVertex3f(baseRight.x, baseRight.y, baseRight.z);
+	glVertex3f(baseUp.x, baseUp.y, baseUp.z); glVertex3f(baseDown.x, baseDown.y, baseDown.z);
+
+	const float a = size * 0.8f;
+	glVertex3f(eye.x, eye.y, eye.z); glVertex3f(eye.x + forward.x * a, eye.y + forward.y * a, eye.z + forward.z * a);
+	glVertex3f(eye.x, eye.y, eye.z); glVertex3f(eye.x + right.x * a * 0.7f, eye.y + right.y * a * 0.7f, eye.z + right.z * a * 0.7f);
+	glVertex3f(eye.x, eye.y, eye.z); glVertex3f(eye.x + up.x * a * 0.7f, eye.y + up.y * a * 0.7f, eye.z + up.z * a * 0.7f);
+
+	glEnd();
+	//glEnable(GL_LIGHTING);
+}
+
+void DrawCameraFrustum(const Camera& cam, float aspect, float scale, const Vector3& color) {
+	Vector3 eye, right, up, forward;
+	cam.getEyeBasis(eye, right, up, forward);
+	const float fovYdeg = cam.getFovY();
+	const float zn = cam.getNearZ() * scale;
+	const float zf = cam.getFarZ() * scale;
+
+	const float fovYrad = fovYdeg * 3.14159f / 180.0f;
+	const float hNear = 2.0f * std::tanf(fovYrad / 2.0f) * zn; // height of near plane
+	const float wNear = hNear * aspect; // width of near plane
+	const float hFar = 2.0f * std::tanf(fovYrad / 2.0f) * zf; // height of far plane
+	const float wFar = hFar * aspect; // width of far plane
+
+	const Vector3 nc = eye + forward * zn; // near center
+	const Vector3 fc = eye + forward * zf; // far center
+
+	const Vector3 ntl = nc + (up * (hNear / 2.0f)) - (right * (wNear / 2.0f));
+	const Vector3 ntr = nc + (up * (hNear / 2.0f)) + (right * (wNear / 2.0f));
+	const Vector3 nbl = nc - (up * (hNear / 2.0f)) - (right * (wNear / 2.0f));
+	const Vector3 nbr = nc - (up * (hNear / 2.0f)) + (right * (wNear / 2.0f));
+
+	const Vector3 ftl = fc + (up * (hFar / 2.0f)) - (right * (wFar / 2.0f));
+	const Vector3 ftr = fc + (up * (hFar / 2.0f)) + (right * (wFar / 2.0f));
+	const Vector3 fbl = fc - (up * (hFar / 2.0f)) - (right * (wFar / 2.0f));
+	const Vector3 fbr = fc - (up * (hFar / 2.0f)) + (right * (wFar / 2.0f));
+
+	//glDisable(GL_LIGHTING);
+	glLineWidth(1.5f);
+	glColor3f(color.x, color.y, color.z);
+	glBegin(GL_LINES);
+		// Near rectangle
+		glVertex3f(ntl.x, ntl.y, ntl.z); glVertex3f(ntr.x, ntr.y, ntr.z); glVertex3f(ntr.x, ntr.y, ntr.z); glVertex3f(nbr.x, nbr.y, nbr.z);
+		glVertex3f(nbr.x, nbr.y, nbr.z); glVertex3f(nbl.x, nbl.y, nbl.z); glVertex3f(nbl.x, nbl.y, nbl.z); glVertex3f(ntl.x, ntl.y, ntl.z);
+		// Far rectangle
+		glVertex3f(ftl.x, ftl.y, ftl.z); glVertex3f(ftr.x, ftr.y, ftr.z); glVertex3f(ftr.x, ftr.y, ftr.z); glVertex3f(fbr.x, fbr.y, fbr.z);
+		glVertex3f(fbr.x, fbr.y, fbr.z); glVertex3f(fbl.x, fbl.y, fbl.z); glVertex3f(fbl.x, fbl.y, fbl.z); glVertex3f(ftl.x, ftl.y, ftl.z);
+		// Connecting both rectangles
+		glVertex3f(ntl.x, ntl.y, ntl.z); glVertex3f(ftl.x, ftl.y, ftl.z); glVertex3f(ntr.x, ntr.y, ntr.z); glVertex3f(ftr.x, ftr.y, ftr.z);
+		glVertex3f(nbl.x, nbl.y, nbl.z); glVertex3f(fbl.x, fbl.y, fbl.z); glVertex3f(nbr.x, nbr.y, nbr.z); glVertex3f(fbr.x, fbr.y, fbr.z);
+		// Lines from eye to plane corners
+		glVertex3f(eye.x, eye.y, eye.z); glVertex3f(ntl.x, ntl.y, ntl.z); glVertex3f(eye.x, eye.y, eye.z); glVertex3f(ntr.x, ntr.y, ntr.z);
+		glVertex3f(eye.x, eye.y, eye.z); glVertex3f(nbl.x, nbl.y, nbl.z); glVertex3f(eye.x, eye.y, eye.z); glVertex3f(nbr.x, nbr.y, nbr.z);
+
+
+	glEnd();
+	//glEnable(GL_LIGHTING);
+}

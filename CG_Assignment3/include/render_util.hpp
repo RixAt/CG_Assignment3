@@ -35,7 +35,8 @@ void DrawPlane(RenderMode mode, float width, float depth, const Vector3& color);
 // Draw a ground plane with grid lines
 void DrawGround(float size = 200.0f, float spacing = 10.0f);
 //
-void DrawCameraMarker(const Camera& cam);
+void DrawCameraMarker(const Camera& cam, float size = 1.0f, const Vector3& color = Vector3(1.0f,1.0f,1.0f));
+void DrawCameraFrustum(const Camera& cam, float aspect, float scale = 1.0f, const Vector3& color = Vector3(1.0f, 1.0f, 1.0f));
 
 
 #endif //RENDER_UTIL_HPP

@@ -63,10 +63,19 @@ public:
 	Vector3 getPosition() const { return position; }
 	float getYaw() const { return yaw; }
 	float getPitch() const { return pitch; }
+	float getRoll() const { return roll; }
+	void getEyeBasis(Vector3& eye,Vector3& right, Vector3& up, Vector3& forward) const;
+	float getFovY() const { return fovY; }
+	float getNearZ() const { return zNear; }
+	float getFarZ() const { return zFar; }
 
 	void setPosition(const Vector3& pos) { position = pos; }
 	void setYaw(float newYaw) { yaw = newYaw; }
 	void setPitch(float newPitch) { pitch = clampPitch(newPitch); }
+	void setRoll(float newRoll) { roll = newRoll; }
+	void setFovY(float newFovY) { fovY = newFovY; }
+	void setNearZ(float newNearZ) { zNear = newNearZ; }
+	void setFarZ(float newFarZ) { zFar = newFarZ; }
 
 	// (Public) Move speeds
 	float moveSpeed; // Movement speed, units per input step
@@ -120,9 +129,9 @@ public:
 		cameraFPV.setProjection(60.0f, 0.1f, 1000.0f);
 
 		cameraESV.setMode(CameraMode::EntireScene);
-		cameraESV.setPosition(Vector3(0.0f, 30.0f, 60.0f));
+		cameraESV.setPosition(Vector3(0.0f, 100.0f, 160.0f));
 		cameraESV.setYaw(0.0f);
-		cameraESV.setPitch(-0.90f);
+		cameraESV.setPitch(-0.65f);
 		cameraESV.setProjection(60.0f, 0.1f, 1000.0f);
 
 		cameraFree.setMode(CameraMode::FreeCam);

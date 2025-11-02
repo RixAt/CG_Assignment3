@@ -60,12 +60,12 @@ void Camera::applyView(int winW, int winH) const {
 	glLoadIdentity();
 
 	// Compute look direction
-	const float cy = std::cosf(yaw);
-	const float sy = std::sinf(yaw);
-	const float cp = std::cosf(pitch);
-	const float sp = std::sinf(pitch);
+	const float cy = std::cosf(y);
+	const float sy = std::sinf(y);
+	const float cp = std::cosf(p);
+	const float sp = std::sinf(p);
 
-	Vector3 forward(sy * cp, -sp, cy * cp);
+	Vector3 forward(sy * cp, sp, -cy * cp);
 
 	Vector3 target = eye + forward;
 
@@ -80,7 +80,7 @@ void Camera::applyView(int winW, int winH) const {
 void Camera::moveForward(float amount) {
 	if (mode == CameraMode::EntireScene) return;
 	position.x += std::sinf(yaw) * amount;
-	position.z += std::cosf(yaw) * amount;
+	position.z += -std::cosf(yaw) * amount;
 }
 
 // Move the camera backward in direction facing in XZ plane
@@ -109,7 +109,7 @@ void Camera::elevate(float amount) {
 
 void Camera::turnLeft(float amount) {
 	if (mode == CameraMode::EntireScene) return;
-	yaw += amount;
+	yaw -= amount;
 }
 void Camera::turnRight(float amount) {
 	if (mode == CameraMode::EntireScene) return;
@@ -126,6 +126,39 @@ void Camera::lookDown(float amount) {
 	if (mode == CameraMode::EntireScene) return;
 	pitch = clampPitch(pitch - amount);
 	return;
+}
+
+// Get eye position and basis vectors
+void Camera::getEyeBasis(Vector3& eye, Vector3& right, Vector3& up, Vector3& forward) const {
+	eye = position;
+	if (mode == CameraMode::FirstPerson) {
+		eye = fpvAnchor ? *fpvAnchor : position;
+		eye.y += fpvEyeHeight;
+	}
+	
+	// Compute forward vector
+	const float cy = std::cosf(yaw);
+	const float sy = std::sinf(yaw);
+	const float cp = std::cosf(pitch);
+	const float sp = std::sinf(pitch);
+	forward = Vector3(sy * cp, sp, -cy * cp);
+
+	// Compute right vector
+	right = Vector3(-forward.z, 0.0, forward.x);
+	float rm = right.magnitude();
+	if (rm > 0.0f) { right.x /= rm; right.z /= rm; }
+	else { right = Vector3(1.0f, 0.0f, 0.0f); }
+
+	// Compute up vector as cross product of forward and right
+	up = Vector3(
+		right.y * forward.z - right.z * forward.y,
+		right.z * forward.x - right.x * forward.z,
+		right.x * forward.y - right.y * forward.x
+	);
+
+	float um = up.magnitude();
+	if (um > 0.0f) { up.x /= um; up.y /= um; up.z /= um; }
+	else { up = Vector3(0.0f, 1.0f, 0.0f); }
 }
 
 // Toggle between camera modes
