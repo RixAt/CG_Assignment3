@@ -34,7 +34,10 @@ void DrawPlane(RenderMode mode, float width, float depth, const Vector3& color);
 
 // Draw a ground plane with grid lines
 void DrawGround(float size = 200.0f, float spacing = 10.0f);
-//
+// Draw coordinate axes at the origin
+void DrawAxes(float size = 5.0f);
+
+// Draw a camera marker and frustum
 void DrawCameraMarker(const Camera& cam, float size = 1.0f, const Vector3& color = Vector3(1.0f,1.0f,1.0f));
 void DrawCameraFrustum(const Camera& cam, float aspect, float scale = 1.0f, const Vector3& color = Vector3(1.0f, 1.0f, 1.0f));
 

@@ -84,6 +84,10 @@ void Game::draw(int winW, int winH) const {
 		}
 	}
 
+	if (showAxes) {
+		DrawAxes(100.0f);
+	}
+
 	const float aspect = (winH > 0) ? (float)winW / (float)winH : 1.0f;
 
 	if (cams.renderCam != &cams.cameraFPV) {
