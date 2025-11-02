@@ -45,7 +45,9 @@ void Game::init() {
 
 		robots.push_back(new Robot(spawnPos, 12.0f));
 	}
-	
+
+	cams.setRenderFPV();
+	cams.controlCam = &cams.cameraFPV;
 }
 
 // Update game state
@@ -77,7 +79,7 @@ void Game::draw(int winW, int winH) const {
 		cameraPos.x + lx, cameraPos.y, cameraPos.z + lz,
 		0.0, 1.0, 0.0);*/
 
-	camera.applyView(winW, winH);
+	cams.renderCam->applyView(winW, winH);
 
 	DrawGround();
 
@@ -89,7 +91,7 @@ void Game::draw(int winW, int winH) const {
 		}
 	}
 
-	DrawCameraMarker(camera);
+	//DrawCameraMarker(camera);
 
 	glutSwapBuffers();
 }
@@ -128,6 +130,30 @@ void Game::handleKey(unsigned char key) {
 	case 'I':
 		// Print instructions
 		break;
+	case '3':
+		cams.activateFreeCam();
+		break;
+
+	case 'z':
+	case 'Z':
+		cams.controlCam->moveLeft(cams.controlCam->moveSpeed);
+		glutPostRedisplay();
+		break;
+	case 'x':
+	case 'X':
+		cams.controlCam->moveRight(cams.controlCam->moveSpeed);
+		glutPostRedisplay();
+		break;
+	case 'q':
+	case 'Q':
+		cams.controlCam->elevate(cams.controlCam->moveSpeed);
+		glutPostRedisplay();
+		break;
+	case 'e':
+	case 'E':
+		cams.controlCam->elevate(-cams.controlCam->moveSpeed);
+		glutPostRedisplay();
+		break;
 	default:
 		break;
 	}
@@ -140,27 +166,27 @@ void Game::handleSpecialKey(int key) {
 		break;
 	case GLUT_KEY_F2:
 		// Toggle view mode
-		// NOT WORKING YET
-		camera.toggleMode();
+		cams.toggleFPV_ESV();
+		glutPostRedisplay();
 		break;
 	case GLUT_KEY_UP:
 		// Move camera forward
-		camera.moveForward(camera.moveSpeed);
+		cams.controlCam->moveForward(cams.controlCam->moveSpeed);
 		glutPostRedisplay();
 		break;
 	case GLUT_KEY_DOWN:
 		// Move camera backward
-		camera.moveBackward(camera.moveSpeed);
+		cams.controlCam->moveBackward(cams.controlCam->moveSpeed);
 		glutPostRedisplay();
 		break;
 	case GLUT_KEY_LEFT:
 		// Rotate camera left
-		camera.turnLeft(camera.turnSpeed);
+		cams.controlCam->turnLeft(cams.controlCam->turnSpeed);
 		glutPostRedisplay();
 		break;
 	case GLUT_KEY_RIGHT:
 		// Rotate camera right
-		camera.turnRight(camera.turnSpeed);
+		cams.controlCam->turnRight(cams.controlCam->turnSpeed);
 		glutPostRedisplay();
 		break;
 	default:

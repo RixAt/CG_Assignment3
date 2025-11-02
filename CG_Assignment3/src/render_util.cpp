@@ -96,25 +96,25 @@ void DrawGround(float size, float spacing) {
 	glEnd();
 }
 
-void DrawCameraMarker(const Camera& cam) {
-	glPushMatrix();
-		glTranslatef(cam.position.x, cam.position.y, cam.position.z);
-		glRotatef(-cam.yaw * 180.0f / 3.14159f, 0.0f, 1.0f, 0.0f);
-		glRotatef(-cam.pitch * 180.0f / 3.14159f, 1.0f, 0.0f, 0.0f);
-		glColor3f(1.0f, 0.8f, 0.0f);
-		glBegin(GL_TRIANGLES);
-			glVertex3f(0.0f, 0.5f, 0.0f); glVertex3f(-0.2f, 0.0f, 0.3f); glVertex3f(0.2f, 0.0f, 0.3f);
-			glVertex3f(0.0f, 0.5f, 0.0f); glVertex3f(0.2f, 0.0f, 0.3f);  glVertex3f(0.2f, 0.0f, -0.3f);
-			glVertex3f(0.0f, 0.5f, 0.0f); glVertex3f(0.2f, 0.0f, -0.3f); glVertex3f(-0.2f, 0.0f, -0.3f);
-			glVertex3f(0.0f, 0.5f, 0.0f); glVertex3f(-0.2f, 0.0f, -0.3f); glVertex3f(-0.2f, 0.0f, 0.3f);
-		glEnd();
-		glColor3f(1.0f, 0.5f, 0.0f);
-		glBegin(GL_QUADS);
-			glVertex3f(-0.1f, 0.0f, 0.2f);
-			glVertex3f(0.1f, 0.0f, 0.2f); 
-			glVertex3f(0.1f, 0.0f, -0.2f); 
-			glVertex3f(-0.1f, 0.0f, -0.2f);
-		glEnd();
-
-	glPopMatrix();
-}
+//void DrawCameraMarker(const Camera& cam) {
+//	glPushMatrix();
+//		glTranslatef(cam.position.x, cam.position.y, cam.position.z);
+//		glRotatef(-cam.yaw * 180.0f / 3.14159f, 0.0f, 1.0f, 0.0f);
+//		glRotatef(-cam.pitch * 180.0f / 3.14159f, 1.0f, 0.0f, 0.0f);
+//		glColor3f(1.0f, 0.8f, 0.0f);
+//		glBegin(GL_TRIANGLES);
+//			glVertex3f(0.0f, 0.5f, 0.0f); glVertex3f(-0.2f, 0.0f, 0.3f); glVertex3f(0.2f, 0.0f, 0.3f);
+//			glVertex3f(0.0f, 0.5f, 0.0f); glVertex3f(0.2f, 0.0f, 0.3f);  glVertex3f(0.2f, 0.0f, -0.3f);
+//			glVertex3f(0.0f, 0.5f, 0.0f); glVertex3f(0.2f, 0.0f, -0.3f); glVertex3f(-0.2f, 0.0f, -0.3f);
+//			glVertex3f(0.0f, 0.5f, 0.0f); glVertex3f(-0.2f, 0.0f, -0.3f); glVertex3f(-0.2f, 0.0f, 0.3f);
+//		glEnd();
+//		glColor3f(1.0f, 0.5f, 0.0f);
+//		glBegin(GL_QUADS);
+//			glVertex3f(-0.1f, 0.0f, 0.2f);
+//			glVertex3f(0.1f, 0.0f, 0.2f); 
+//			glVertex3f(0.1f, 0.0f, -0.2f); 
+//			glVertex3f(-0.1f, 0.0f, -0.2f);
+//		glEnd();
+//
+//	glPopMatrix();
+//}

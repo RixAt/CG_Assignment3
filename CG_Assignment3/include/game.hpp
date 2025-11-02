@@ -31,11 +31,7 @@ public:
 	// World state
 	std::vector<Robot*> robots;
 
-	// Temporary camera
-	/*Vector3 cameraPos;
-	float cameraYaw;*/
-
-	Camera camera;
+	CameraSystem cams;
 
 	// Rendering state
 	RenderMode g_renderMode;
