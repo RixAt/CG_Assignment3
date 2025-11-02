@@ -27,6 +27,19 @@
 #include "utilities.hpp"
 #include "camera.hpp"
 
+// Struct: Viewport
+// Defines a rectangular viewport area
+struct Viewport {
+	int x, y; // Bottom-left corner
+	int width, height; // Dimensions
+};
+
+// Sets the OpenGL viewport and scissor rectangle
+inline void SetViewport(const Viewport& vp) {
+	glViewport(vp.x, vp.y, vp.width, vp.height);
+	glScissor(vp.x, vp.y, vp.width, vp.height);
+}
+
 // Primitive geometry drawing functions
 void DrawCube(RenderMode mode, float size = 1.0f);
 void DrawSphere(RenderMode mode, float radius = 1.0f);
@@ -41,5 +54,7 @@ void DrawAxes(float size = 5.0f);
 void DrawCameraMarker(const Camera& cam, float size = 1.0f, const Vector3& color = Vector3(1.0f,1.0f,1.0f));
 void DrawCameraFrustum(const Camera& cam, float aspect, float scale = 1.0f, const Vector3& color = Vector3(1.0f, 1.0f, 1.0f));
 
+// Draw 2D text on the screen at specified coordinates
+void DrawText2D(float x, float y, const char* text, void* font = GLUT_BITMAP_HELVETICA_18);
 
 #endif //RENDER_UTIL_HPP

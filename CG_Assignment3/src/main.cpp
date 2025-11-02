@@ -214,6 +214,8 @@ int main(int argc, char** argv) {
 	PrintInstructions();
 
 	glEnable(GL_DEPTH_TEST); // Enable depth testing for 3D
+	glEnable(GL_CULL_FACE);  // Enable back-face culling
+	glEnable(GL_SCISSOR_TEST); // Enable scissor test for viewports
 	glClearColor(0.0, 0.0, 0.0, 1.0); // clear the window screen
 
 	game.init();

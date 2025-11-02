@@ -124,7 +124,7 @@ void DrawCameraMarker(const Camera& cam, float size, const Vector3& color) {
 	const Vector3 baseUp = eye + up * (size * 0.6f);
 	const Vector3 baseDown = eye - up * (size * 0.6f);
 
-	//glDisable(GL_LIGHTING);
+	glPushAttrib(GL_ENABLE_BIT | GL_LINE_BIT | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLineWidth(1.5f);
 	glColor3f(color.x, color.y, color.z);
 	glBegin(GL_LINES);
@@ -142,6 +142,7 @@ void DrawCameraMarker(const Camera& cam, float size, const Vector3& color) {
 	glVertex3f(eye.x, eye.y, eye.z); glVertex3f(eye.x + up.x * a * 0.7f, eye.y + up.y * a * 0.7f, eye.z + up.z * a * 0.7f);
 
 	glEnd();
+	glPopAttrib();
 	//glEnable(GL_LIGHTING);
 }
 
@@ -171,6 +172,7 @@ void DrawCameraFrustum(const Camera& cam, float aspect, float scale, const Vecto
 	const Vector3 fbl = fc - (up * (hFar / 2.0f)) - (right * (wFar / 2.0f));
 	const Vector3 fbr = fc - (up * (hFar / 2.0f)) + (right * (wFar / 2.0f));
 
+	glPushAttrib(GL_ENABLE_BIT | GL_LINE_BIT | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	//glDisable(GL_LIGHTING);
 	glLineWidth(1.5f);
 	glColor3f(color.x, color.y, color.z);
@@ -191,4 +193,12 @@ void DrawCameraFrustum(const Camera& cam, float aspect, float scale, const Vecto
 
 	glEnd();
 	//glEnable(GL_LIGHTING);
+	glPopAttrib();
+}
+
+void DrawText2D(float x, float y, const char* text, void* font) {
+	glRasterPos2f(x, y);
+	for (const char* c = text; *c != '\0'; ++c) {
+		glutBitmapCharacter(font, *c);
+	}
 }

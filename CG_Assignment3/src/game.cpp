@@ -62,10 +62,18 @@ void Game::update(float dt) {
 
 // Draw the game scene
 void Game::draw(int winW, int winH) const {
-	// Draw game objects here
+	glDisable(GL_SCISSOR_TEST);
+	glViewport(0, 0, winW, winH);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_SCISSOR_TEST);
 
-	glMatrixMode(GL_PROJECTION);
+	const ViewportsLayout viewports = computeViewports(winW, winH);
+
+	drawMainViewport(viewports.vpMain);
+	drawInsetViewport(viewports.vpInset);
+	drawHUDViewport(viewports.vpHUD);
+
+	/*glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluPerspective(60.0, (float)winW / (float)winH, 0.1, 1000.0);
 
@@ -88,13 +96,15 @@ void Game::draw(int winW, int winH) const {
 		DrawAxes(100.0f);
 	}
 
+	}*/
+
 	const float aspect = (winH > 0) ? (float)winW / (float)winH : 1.0f;
 
 	if (cams.renderCam != &cams.cameraFPV) {
 		DrawCameraFrustum(cams.cameraFPV, aspect, 0.5f, Vector3(1.0f, 0.5f, 0.0f));
 		DrawCameraMarker(cams.cameraFPV, 1.5f, Vector3(1.0f, 0.5f, 0.0f));
 	}
-    if (cams.renderCam != &cams.cameraESV) {
+	if (cams.renderCam != &cams.cameraESV) {
 		DrawCameraMarker(cams.cameraESV, 1.3f, Vector3(0.2f, 0.7f, 1.0f));
 		DrawCameraFrustum(cams.cameraESV, aspect, 1.0f, Vector3(0.2f, 0.7f, 1.0f));
 	}
@@ -105,6 +115,123 @@ void Game::draw(int winW, int winH) const {
 	}
 
 	glutSwapBuffers();
+}
+
+void Game::drawWorld() const {
+	DrawGround();
+	if (showAxes) {
+		DrawAxes(100.0f);
+	}
+
+	for (const auto& r : robots) {
+		r->draw(g_renderMode);
+
+		if (showColliders) {
+			r->drawColliderDebug();
+		}
+	}
+
+}
+
+void Game::drawCameraDebugLines(const Camera* exclude, float aspect) const {
+	if (showCameraFrustums) {
+		if (exclude != &cams.cameraFPV) {
+			DrawCameraFrustum(cams.cameraFPV, aspect, 0.5f, Vector3(1.0f, 0.5f, 0.0f));
+		}
+		if (exclude != &cams.cameraESV) {
+			DrawCameraFrustum(cams.cameraESV, aspect, 1.0f, Vector3(0.2f, 0.7f, 1.0f));
+		}
+		if (exclude != &cams.cameraFree) {
+			DrawCameraFrustum(cams.cameraFree, aspect, 0.5f, Vector3(0.5f, 1.0f, 0.5f));
+		}
+	}
+	if (showCameraMarkers) {
+		if (exclude != &cams.cameraFPV) {
+			DrawCameraMarker(cams.cameraFPV, 2.0f, Vector3(1.0f, 0.5f, 0.0f));
+		}
+		if (exclude != &cams.cameraESV) {
+			DrawCameraMarker(cams.cameraESV, 2.0f, Vector3(0.2f, 0.7f, 1.0f));
+		}
+		if (exclude != &cams.cameraFree) {
+			DrawCameraMarker(cams.cameraFree, 2.0f, Vector3(0.5f, 1.0f, 0.5f));
+		}
+	}
+}
+
+
+Game::ViewportsLayout Game::computeViewports(int winW, int winH) const {
+	ViewportsLayout allViewports{};
+
+	const int hudH = std::max(1, winH / 8);
+	const int mainH = std::max(1, winH - hudH);
+	const int mainW = winW;
+
+	allViewports.vpHUD.x = 0; allViewports.vpHUD.width = winW;
+	allViewports.vpHUD.height = hudH;
+	allViewports.vpHUD.y = winH - hudH;
+
+	allViewports.vpMain.x = 0;
+	allViewports.vpMain.y = 0;
+	allViewports.vpMain.width = mainW;
+	allViewports.vpMain.height = mainH;
+
+	const int insetW = std::max(120, mainW / 4);
+	const int insetH = std::max(90, mainH / 4);
+	allViewports.vpInset.width = insetW;
+	allViewports.vpInset.height = insetH;
+	allViewports.vpInset.x = allViewports.vpMain.x + allViewports.vpMain.width - insetW - 10;
+	allViewports.vpInset.y = allViewports.vpMain.y + allViewports.vpMain.height - insetH - 10;
+
+	return allViewports;
+}
+
+void Game::drawMainViewport(const Viewport& vp) const {
+	SetViewport(vp);
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+	glClearColor(0,0,0,1);
+	cams.renderCam->applyView(vp.width, vp.height);
+	drawWorld();
+
+	const float aspect = (vp.height > 0) ? (float)vp.width / (float)vp.height : 1.0f;
+	drawCameraDebugLines(cams.renderCam, aspect);
+
+}
+
+void Game::drawInsetViewport(const Viewport& vp) const {
+	SetViewport(vp);
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+	glClearColor(0, 0, 0, 1);
+	const Camera* insetCam = (cams.renderCam == &cams.cameraFPV) ? &cams.cameraESV
+							: (cams.renderCam == &cams.cameraESV) ? &cams.cameraFPV
+							: &cams.cameraESV;
+	
+	insetCam->applyView(vp.width, vp.height);
+	drawWorld();
+
+	const float aspect = (vp.height > 0) ? (float)vp.width / (float)vp.height : 1.0f;
+	drawCameraDebugLines(insetCam
+		, aspect);
+}
+
+// Draw Heads-Up Display (HUD) viewport
+// Displays game information
+void Game::drawHUDViewport(const Viewport& vp) const {
+	SetViewport(vp);
+	glClear(GL_DEPTH_BUFFER_BIT);
+	glClearColor(0, 0, 0, 1);
+	
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluOrtho2D(0, vp.width, 0, vp.height);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	const int pad = 12;
+	DrawText2D(pad, vp.height - 20, "Robot Hunter");
+	DrawText2D(pad, vp.height - 40, ("Score: "));
+	DrawText2D(pad, vp.height - 60, ("Robots Killed: "));
+	DrawText2D(pad, vp.height - 80, ("Remaining Time:" ));
+
 }
 
 void Game::handleKey(unsigned char key) {
