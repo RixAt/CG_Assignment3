@@ -137,6 +137,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="include\bullet.hpp" />
     <ClInclude Include="include\camera.hpp" />
     <ClInclude Include="include\game.hpp" />
     <ClInclude Include="include\gameobject.hpp" />
