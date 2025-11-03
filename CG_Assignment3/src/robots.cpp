@@ -17,6 +17,7 @@
 // ====================================================================
 
 #include "robots.hpp"
+#include <algorithm>
 
 static const float ROBOT_COLLIDER_RADIUS = 20.0f;
 static const float ROBOT_MODEL_Y_OFFSET = 11.5f; // Offset to position model above ground
@@ -28,7 +29,17 @@ Robot::Robot()
 	color(0.8f, 0.1f, 0.1f),
 	alive(true)
 {
+	orbitCenter = position;
+	orbitRadius = 12.0f;
+	orbitAngle = 0.0f;
+	orbitSpeed = 0.6f;
 
+	bobAmp = 0.4f;
+	bobFreq = 1.5f;
+
+	stepFreq = 2.2f;
+	armSwingDeg = 30.0f;
+	legSwingDeg = 25.0f;
 }
 
 Robot::Robot(const Vector3& startPos, float r)
@@ -38,7 +49,17 @@ Robot::Robot(const Vector3& startPos, float r)
 	color(0.8f, 0.1f, 0.1f),
 	alive(true)
 {
+	orbitCenter = startPos;
+	orbitRadius = std::max(8.0f, r);
+	orbitAngle = (startPos.x + startPos.z) * 0.07f;
+	orbitSpeed = (((int)std::fabs(startPos.x + startPos.z)) % 2 ? 1.f : -1.f) * 0.6f;
 
+	bobAmp = 0.4f;
+	bobFreq = 1.5f;
+
+	stepFreq = 2.2f;
+	armSwingDeg = 30.0f;
+	legSwingDeg = 25.0f;
 }
 
 // Body helpers
@@ -59,10 +80,14 @@ void Robot::drawTorso(RenderMode mode) const {
 
 void Robot::drawArm(RenderMode mode, bool isLeftSide) const {
 	float side = isLeftSide ? -1.0f : 1.0f;
+	const float twoPi = 6.28318530718f;
+	const float phase = isLeftSide ? 0.0f : 3.14159265359f;
+	const float swing = armSwingDeg * std::sinf(stepFreq * animPhase * twoPi + phase);
+	
 
 	glPushMatrix();
 		glTranslatef(3.0f * side, 3.0f, 0.0f);
-		// Shoulder swing here during dancing?
+		glRotatef(swing, 1.0f, 0.0f, 0.0f);
 
 		// Upper arm
 		glPushMatrix();
@@ -83,8 +108,13 @@ void Robot::drawArm(RenderMode mode, bool isLeftSide) const {
 
 void Robot::drawLeg(RenderMode mode, bool isLeftSide) const {
 	float side = isLeftSide ? -1.0f : 1.0f;
+	const float twoPi = 6.28318530718f;
+	const float phase = isLeftSide ? 3.14159265359f : 0.0f ;
+	const float swing = legSwingDeg * std::sinf(stepFreq * animPhase * twoPi + phase);
+
 	glPushMatrix();
 		glTranslatef(1.5f * side, -4.0f, 0.0f);
+		glRotatef(swing, 1.0f, 0.0f, 0.0f);
 
 		// Upper leg
 		glPushMatrix();
@@ -105,7 +135,15 @@ void Robot::drawLeg(RenderMode mode, bool isLeftSide) const {
 
 // Update
 void Robot::update(float dt) {
-	
+	orbitAngle += orbitSpeed * dt;
+	position.x = orbitCenter.x + orbitRadius * std::cos(orbitAngle);
+	position.z = orbitCenter.z + orbitRadius * std::sin(orbitAngle);
+
+	const float twoPi = 6.28318530718f;
+
+	position.y = bobAmp * std::sin(bobFreq * animPhase * twoPi);
+
+	animPhase += dt;
 }
 
 // Draw
@@ -115,6 +153,9 @@ void Robot::draw(RenderMode mode) const {
 	glPushMatrix();
 		glTranslatef(position.x, position.y, position.z);
 		glTranslatef(0.0f, ROBOT_MODEL_Y_OFFSET, 0.0f);
+
+		float headingDeg = ( - orbitAngle * 180.0f / 3.141592653f) + 90.0f;
+		glRotatef(headingDeg, 0.0f, 1.0f, 0.0f);
 
 		switch (mode) {
 		case RenderMode::Wireframe:

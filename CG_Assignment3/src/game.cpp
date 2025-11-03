@@ -261,6 +261,11 @@ void Game::handleKey(unsigned char key) {
 	case '3':
 		cams.activateFreeCam();
 		break;
+	case 'm':
+	case 'M':
+		motionEnabled = !motionEnabled;
+		glutPostRedisplay();
+		break;
 
 	case 'z':
 	case 'Z':

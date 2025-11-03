@@ -30,6 +30,20 @@ private:
 	Vector3 color;      // Base color for rendering
 	bool alive;         // Is the robot alive in the scene?
 
+	Vector3 orbitCenter = Vector3(0.0f, 0.0f, 0.0f);
+	float orbitRadius = 12.0f;
+	float orbitAngle = 0.0f; // Current angle around orbit center
+	float orbitSpeed = 0.6f; 
+
+	float bobAmp = 0.4f;
+	float bobFreq = 1.5f;
+
+	float stepFreq = 2.2f;
+	float armSwingDeg = 30.0f;
+	float legSwingDeg = 25.0f;
+
+
+
 	// Body part helpers
 	void drawTorso(RenderMode mode) const;
 	void drawHead(RenderMode mode)  const;
