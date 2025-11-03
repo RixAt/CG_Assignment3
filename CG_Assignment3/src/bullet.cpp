@@ -18,6 +18,7 @@
 
 #include "bullet.hpp"
 #include "render_util.hpp"
+#include "effects.hpp"
 #include <algorithm>
 
 Bullet::Bullet() = default;
@@ -101,7 +102,8 @@ int bulletsUpdate(std::vector<Bullet>& pool,
 	int& shotsHit,
 	int& score,
 	float distBonusMultiplier,
-	int baseScore
+	int baseScore,
+	std::vector<ImpactFX>* impacts
 ) {
 	int hits = 0;
 
@@ -121,6 +123,8 @@ int bulletsUpdate(std::vector<Bullet>& pool,
 				float dist = (b.pos() - b.pos()).magnitude();
 				int distBonus = static_cast<int>(dist * distBonusMultiplier);
 				score += baseScore + distBonus;
+				if (impacts) effectsSpawnImpact(*impacts, b.pos());
+
 				b.deactivate();
 				break; // Bullet can only hit one robot
 			}

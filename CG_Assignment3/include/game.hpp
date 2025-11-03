@@ -26,11 +26,13 @@
 #include "robots.hpp"
 #include "camera.hpp"
 #include "bullet.hpp"
+#include "effects.hpp"
 
 class Game {
 public:
 	// World state
 	std::vector<Robot*> robots;
+	std::vector<ImpactFX> impacts;
 
 	CameraSystem cams;
 

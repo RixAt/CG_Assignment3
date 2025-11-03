@@ -61,6 +61,7 @@ void Game::update(float dt) {
 			r->update(dt);
 		}
 	}
+	effectsUpdate(impacts, dt);
 	
 	timeRemaining = std::max(0.0f, timeRemaining - dt);
 	if (timeRemaining <= 0.0f) {
@@ -68,7 +69,7 @@ void Game::update(float dt) {
 	}
 
 	timeSinceLastKill += dt;
-	bulletsUpdate(bullets, dt, robots, robotsKilled, shotsHit, score);
+	bulletsUpdate(bullets, dt, robots, robotsKilled, shotsHit, score, 3.0f, 100, &impacts);
 }
 
 // Draw the game scene
@@ -165,6 +166,7 @@ void Game::drawMainViewport(const Viewport& vp) const {
 	cams.renderCam->applyView(vp.width, vp.height);
 	drawWorld();
 	bulletsDraw(bullets, g_renderMode);
+	effectsDrawImpacts(impacts);
 
 	const float aspect = (vp.height > 0) ? (float)vp.width / (float)vp.height : 1.0f;
 	drawCameraDebugLines(cams.renderCam, aspect);
@@ -189,6 +191,7 @@ void Game::drawInsetViewport(const Viewport& vp) const {
 	insetCam->applyView(vp.width, vp.height);
 	drawWorld();
 	bulletsDraw(bullets, g_renderMode);
+	effectsDrawImpacts(impacts);
 
 	if (insetCam == &cams.cameraFPV) {
 		DrawCameraGun(*insetCam);

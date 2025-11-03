@@ -139,6 +139,7 @@
   <ItemGroup>
     <ClInclude Include="include\bullet.hpp" />
     <ClInclude Include="include\camera.hpp" />
+    <ClInclude Include="include\effects.hpp" />
     <ClInclude Include="include\game.hpp" />
     <ClInclude Include="include\gameobject.hpp" />
     <ClInclude Include="include\GL\freeglut_std.h" />
@@ -151,6 +152,7 @@
   <ItemGroup>
     <ClCompile Include="src\bullet.cpp" />
     <ClCompile Include="src\camera.cpp" />
+    <ClCompile Include="src\effects.cpp" />
     <ClCompile Include="src\game.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\render_util.cpp" />

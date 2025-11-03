@@ -21,6 +21,7 @@
 
 #include "utilities.hpp"
 #include "robots.hpp"
+#include "effects.hpp"
 #include <vector>
 
 class Bullet {
@@ -69,7 +70,8 @@ int bulletsUpdate(std::vector<Bullet>& pool,
 	int& shotsHit,
 	int& score,
 	float distBonusMultiplier = 2.0f,
-	int baseScore = 100
+	int baseScore = 100,
+	std::vector<ImpactFX>* impactList = nullptr
 );
 
 
