@@ -21,6 +21,7 @@
 
 #include <GL/glut.h>
 #include "utilities.hpp"
+#include <algorithm>
 
 // Enum: CameraMode
 // Different modes the camera can operate in
@@ -60,6 +61,10 @@ public:
 	void setFPVAnchor(const Vector3* anchor) { fpvAnchor = anchor; }
 	void setFPVEyeHeight(float height) { fpvEyeHeight = height; };
 
+	void setOrbitTarget(const Vector3& t) { orbitTarget = t; };
+	void setOrbit(float r, float th, float ph);
+	void updateOrbitParam();
+
 	Vector3 getPosition() const { return position; }
 	float getYaw() const { return yaw; }
 	float getPitch() const { return pitch; }
@@ -68,6 +73,9 @@ public:
 	float getFovY() const { return fovY; }
 	float getNearZ() const { return zNear; }
 	float getFarZ() const { return zFar; }
+	float getOrbitRadius() const { return orbitRadius; }
+	float getOrbitTheta() const { return orbitTheta; }
+	float getOrbitPhi() const { return orbitPhi; }
 
 	void setPosition(const Vector3& pos) { position = pos; }
 	void setYaw(float newYaw) { yaw = newYaw; }
@@ -76,6 +84,9 @@ public:
 	void setFovY(float newFovY) { fovY = newFovY; }
 	void setNearZ(float newNearZ) { zNear = newNearZ; }
 	void setFarZ(float newFarZ) { zFar = newFarZ; }
+	void setOrbitRadius(float r) { orbitRadius = std::max(1.0f, r); }
+	void setOrbitTheta(float th) { orbitTheta = th; }
+	void setOrbitPhi(float ph) { orbitPhi = ph; }
 
 	// (Public) Move speeds
 	float moveSpeed; // Movement speed, units per input step
@@ -104,6 +115,12 @@ private:
 	// Check if camera is locked (not movable)
 	bool isLocked() const { return mode == CameraMode::EntireScene; }
 
+	// Arcball
+	Vector3 orbitTarget{ 0,0,0 };
+	float orbitRadius = 200.0f;
+	float orbitTheta = -2.356f;
+	float orbitPhi = 0.8f;
+
 };
 
 
@@ -130,9 +147,12 @@ public:
 
 		cameraESV.setMode(CameraMode::EntireScene);
 		cameraESV.setPosition(Vector3(0.0f, 100.0f, 160.0f));
-		cameraESV.setYaw(0.0f);
-		cameraESV.setPitch(-0.65f);
+		//cameraESV.setYaw(0.0f);
+		//cameraESV.setPitch(-0.65f);
 		cameraESV.setProjection(60.0f, 0.1f, 1000.0f);
+		cameraESV.setOrbit(200.0f, -2.356f, 0.8f);
+		cameraESV.setOrbitTarget(Vector3(0.0f, 0.0f, 0.0f));
+		cameraESV.updateOrbitParam();
 
 		cameraFree.setMode(CameraMode::FreeCam);
 		cameraFree.setPosition(Vector3(0.0f, 20.0f, 40.0f));

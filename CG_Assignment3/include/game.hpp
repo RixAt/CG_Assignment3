@@ -54,6 +54,8 @@ public:
 	// Keyboard input handling
 	void handleKey(unsigned char key);
 	void handleSpecialKey(int key);
+	void handleMouseButton(int button, int state, int x, int y);
+	void handleMouseMotion(int x, int y);
 
 	struct ViewportsLayout {
 		Viewport vpMain;
@@ -74,6 +76,17 @@ public:
 
 	void fireBulletFromCamera(const Camera& cam);
 	void resumeFromMenu();
+
+	struct ArcballState {
+		bool rotating = false;
+		bool zooming = false;
+		int lastX = 0, lastY = 0;
+		float rotSens = 0.008f;
+		float zoomSens = 0.05f;
+		float minR = 20.0f, maxR = 500.0f;
+	} arcball;
+	void updateArcballCamera();
+	bool isESVMainAcive() const;
 
 private:
 	enum class GameState {

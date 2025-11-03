@@ -17,6 +17,7 @@
 // ====================================================================
 
 #include "camera.hpp"
+#include <algorithm>
 
 // Camera constructor with default parameters
 Camera::Camera()
@@ -65,7 +66,7 @@ void Camera::applyView(int winW, int winH) const {
 	const float cp = std::cosf(p);
 	const float sp = std::sinf(p);
 
-	Vector3 forward(sy * cp, sp, -cy * cp);
+	Vector3 forward(sy * cp, -sp, -cy * cp);
 
 	Vector3 target = eye + forward;
 
@@ -141,7 +142,7 @@ void Camera::getEyeBasis(Vector3& eye, Vector3& right, Vector3& up, Vector3& for
 	const float sy = std::sinf(yaw);
 	const float cp = std::cosf(pitch);
 	const float sp = std::sinf(pitch);
-	forward = Vector3(sy * cp, sp, -cy * cp);
+	forward = Vector3(sy * cp, -sp, -cy * cp);
 
 	// Compute right vector
 	right = Vector3(-forward.z, 0.0, forward.x);
@@ -184,4 +185,32 @@ float Camera::clampPitch(float pitchValue) {
 	if (pitchValue > maxPitch) return maxPitch;
 	if (pitchValue < -maxPitch) return -maxPitch;
 	return pitchValue;
+}
+
+// Set the orbit parameters based on current position
+void Camera::setOrbit(float r, float th, float ph) {
+	orbitRadius = std::max(1.0f, r);
+	orbitTheta = th;
+	const float eps = 0.02f;
+	orbitPhi = std::min(3.14159f - eps, std::max(eps, ph));
+}
+
+// Update orbit parameters based on current position
+void Camera::updateOrbitParam() {
+	const float sPh = std::sinf(orbitPhi);
+	const float cPh = std::cosf(orbitPhi);
+	const float sTh = std::sinf(orbitTheta);
+	const float cTh = std::cosf(orbitTheta);
+
+	Vector3 offset(orbitRadius * sPh * sTh,
+		orbitRadius * cPh,
+		orbitRadius * sPh * cTh);
+	position = orbitTarget + offset;
+
+	Vector3 fwd = orbitTarget - position;
+	const float len = fwd.magnitude();
+	if (len > 0.0001f) { fwd = fwd / len; };
+
+	yaw = std::atan2(fwd.x, -fwd.z);
+	pitch = std::atan2(-fwd.y, std::sqrt(fwd.x * fwd.x + fwd.z * fwd.z));
 }

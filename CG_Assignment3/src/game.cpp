@@ -471,3 +471,65 @@ void Game::resumeFromMenu() {
 	resetRound();
 	glutPostRedisplay();
 }
+
+bool Game::isESVMainAcive() const {
+	return (cams.renderCam == &cams.cameraESV);
+}
+
+void Game::updateArcballCamera() {
+	auto& cam = cams.cameraESV;
+	float orbitR = cam.getOrbitRadius();
+	float orbitTh = cam.getOrbitTheta();
+	float orbitPh = cam.getOrbitPhi();
+	cam.setOrbit(orbitR, orbitTh, orbitPh);
+	cam.updateOrbitParam();
+}
+
+void Game::handleMouseButton(int button, int state, int x, int y) {
+	if (gameState == GameState::RoundOver) return;
+	if (!isESVMainAcive()) return;
+
+	if (button == GLUT_LEFT_BUTTON) {
+		arcball.rotating = (state == GLUT_DOWN);
+		arcball.lastX = x;
+		arcball.lastY = y;
+	}
+	else if (button == GLUT_RIGHT_BUTTON) {
+		arcball.zooming = (state == GLUT_DOWN);
+		arcball.lastX = x;
+		arcball.lastY = y;
+	}
+}
+
+void Game::handleMouseMotion(int x, int y) {
+	if (!isESVMainAcive()) return;
+
+	int dx = x - arcball.lastX;
+	int dy = y - arcball.lastY;
+	arcball.lastX = x;
+	arcball.lastY = y;
+
+	auto& cam = cams.cameraESV;
+
+	if (arcball.rotating) {
+		float newTheta = cam.getOrbitTheta() + (dx * arcball.rotSens);
+		float newPhi = cam.getOrbitPhi() + (dy * arcball.rotSens);
+		cam.setOrbit(cam.getOrbitRadius(), newTheta, newPhi);
+		const float eps = 0.02f;
+		if (cam.getOrbitPhi() < eps) {
+			cam.setOrbitPhi(eps);
+		}
+		else if (cam.getOrbitPhi() > (3.14f - eps)) {
+			cam.setOrbitPhi(3.14f - eps);
+		}
+		updateArcballCamera();
+		glutPostRedisplay();
+	}
+	else if (arcball.zooming) {
+		float newR = cam.getOrbitRadius() + (1.0f - dy * arcball.zoomSens);
+		if (newR < arcball.minR) newR = arcball.minR;
+		if (newR > arcball.maxR) newR = arcball.maxR;
+		cam.setOrbitRadius(newR);
+		updateArcballCamera();
+	}
+}

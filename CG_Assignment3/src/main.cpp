@@ -52,6 +52,8 @@ static void PrintInstructions();
 static void OnPopupMenu(int id);
 static void KeyboardInput(unsigned char key, int x, int y);
 static void SpecialInput(int key, int x, int y);
+static void MouseButton(int button, int state, int x, int y);
+static void MouseMotion(int x, int y);
 static void MyDisplay();
 static void Reshape(int w, int h);
 
@@ -146,6 +148,20 @@ static void SpecialInput(int key, int x, int y) {
 		std::cout << "[Debug][SpecialInput] Special key pressed: " << key << " at (" << x << ", " << y << ")" << std::endl;
 	}
 	game.handleSpecialKey(key);
+}
+
+static void MouseButton(int button, int state, int x, int y) {
+	if (debugPrint) {
+		std::cout << "[Debug][MouseButton] Mouse button: " << button << ", State: " << state << " at (" << x << ", " << y << ")" << std::endl;
+	}
+	game.handleMouseButton(button, state, x, y);
+}
+
+static void MouseMotion(int x, int y) {
+	if (debugPrint) {
+		std::cout << "[Debug][MouseMotion] Mouse moved to (" << x << ", " << y << ")" << std::endl;
+	}
+	game.handleMouseMotion(x, y);
 }
 
 // Temp camera
@@ -244,6 +260,8 @@ int main(int argc, char** argv) {
 	glutReshapeFunc(Reshape);			// Call the reshape function
 	glutKeyboardFunc(KeyboardInput);	// Call the keyboard function
 	glutSpecialFunc(SpecialInput);		// Call the special keyboard function
+	glutMouseFunc(MouseButton);			// Call the mouse button function
+	glutMotionFunc(MouseMotion);        // Call the mouse motion function
 
 	int menu = glutCreateMenu(OnPopupMenu);
 	glutAddMenuEntry("Resume", MENU_RESUME);
