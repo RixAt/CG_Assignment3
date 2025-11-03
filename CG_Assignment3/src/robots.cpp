@@ -193,6 +193,12 @@ void Robot::drawColliderDebug() const {
 
 bool Robot::checkHit(const Vector3 &bulletPos, float bulletRadius) const{
 	if (!alive) return false; // If not alive, robot was not hit
+
+	Vector3 c = position + Vector3(0.0f, ROBOT_MODEL_Y_OFFSET, 0.0f);
+	Vector3 d = bulletPos - c;
+	float rr = radius + bulletRadius;
+
+	return (d.x * d.x + d.y * d.y + d.z * d.z) <= (rr * rr);
 }
 
 void Robot::kill() {

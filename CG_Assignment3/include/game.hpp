@@ -69,6 +69,8 @@ public:
 
 	void toggleFullscreen();
 
+	void fireBulletFromCamera(const Camera& cam);
+
 private:
 	enum class GameState {
 		Playing,
@@ -103,9 +105,7 @@ private:
 		return 30.0f; // Default
 	}
 
-	void fireBulletFromCamera(const Camera& cam);
-	void updateBullets(float dt);
-	void drawBullets(RenderMode mode) const;
+	
 
 	int score = 0;
 	int robotsKilled = 0;

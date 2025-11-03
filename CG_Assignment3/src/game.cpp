@@ -68,7 +68,7 @@ void Game::update(float dt) {
 	}
 
 	timeSinceLastKill += dt;
-	//updateBullets(dt);
+	bulletsUpdate(bullets, dt, robots, robotsKilled, shotsHit, score);
 }
 
 // Draw the game scene
@@ -85,20 +85,6 @@ void Game::draw(int winW, int winH) const {
 	drawHUDViewport(viewports.vpHUD);
 
 	const float aspect = (winH > 0) ? (float)winW / (float)winH : 1.0f;
-
-	if (cams.renderCam != &cams.cameraFPV) {
-		DrawCameraFrustum(cams.cameraFPV, aspect, 0.5f, Vector3(1.0f, 0.5f, 0.0f));
-		DrawCameraMarker(cams.cameraFPV, 1.5f, Vector3(1.0f, 0.5f, 0.0f));
-	}
-	if (cams.renderCam != &cams.cameraESV) {
-		DrawCameraMarker(cams.cameraESV, 1.3f, Vector3(0.2f, 0.7f, 1.0f));
-		DrawCameraFrustum(cams.cameraESV, aspect, 1.0f, Vector3(0.2f, 0.7f, 1.0f));
-	}
-
-	if (cams.renderCam != &cams.cameraFree) {
-		DrawCameraFrustum(cams.cameraFree, aspect, 0.5f, Vector3(0.5f, 1.0f, 0.5f));
-		DrawCameraMarker(cams.cameraFree, 1.5f, Vector3(0.5f, 1.0f, 0.5f));
-	}
 
 	glutSwapBuffers();
 }
@@ -173,26 +159,40 @@ Game::ViewportsLayout Game::computeViewports(int winW, int winH) const {
 
 void Game::drawMainViewport(const Viewport& vp) const {
 	SetViewport(vp);
+	glClearColor(0, 0, 0, 1);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-	glClearColor(0,0,0,1);
+	
 	cams.renderCam->applyView(vp.width, vp.height);
 	drawWorld();
+	bulletsDraw(bullets, g_renderMode);
 
 	const float aspect = (vp.height > 0) ? (float)vp.width / (float)vp.height : 1.0f;
 	drawCameraDebugLines(cams.renderCam, aspect);
+
+	// Draw crosshair at center of screen
+	if (cams.renderCam == &cams.cameraFPV) {
+		DrawCameraGun(*cams.renderCam);
+		DrawCrosshair(vp.width, vp.height);
+	}
 
 }
 
 void Game::drawInsetViewport(const Viewport& vp) const {
 	SetViewport(vp);
-	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glClearColor(0, 0, 0, 1);
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+	
 	const Camera* insetCam = (cams.renderCam == &cams.cameraFPV) ? &cams.cameraESV
 							: (cams.renderCam == &cams.cameraESV) ? &cams.cameraFPV
 							: &cams.cameraESV;
 	
 	insetCam->applyView(vp.width, vp.height);
 	drawWorld();
+	bulletsDraw(bullets, g_renderMode);
+
+	if (insetCam == &cams.cameraFPV) {
+		DrawCameraGun(*insetCam);
+	}
 
 	const float aspect = (vp.height > 0) ? (float)vp.width / (float)vp.height : 1.0f;
 	drawCameraDebugLines(insetCam
@@ -205,11 +205,15 @@ void Game::drawHUDViewport(const Viewport& vp) const {
 	SetViewport(vp);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glClearColor(0, 0, 0, 1);
+	glDisable(GL_DEPTH_TEST);
 	
 	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
 	glLoadIdentity();
 	gluOrtho2D(0, vp.width, 0, vp.height);
+
 	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
 	glLoadIdentity();
 
 	const int pad = 12;
@@ -217,11 +221,17 @@ void Game::drawHUDViewport(const Viewport& vp) const {
 	DrawText2D(pad, vp.height - 40, ("Score: " + std::to_string(score)).c_str());
 	DrawText2D(pad, vp.height - 60, ("Robots Killed: " + std::to_string(robotsKilled)).c_str());
 	DrawText2D(pad, vp.height - 80, ("Remaining Time: " + std::to_string((int)std::ceilf(timeRemaining)) + " / 30").c_str());
-	DrawText2D(pad, vp.height - 100, ("Bullet Speed: " + std::string(bulletSpeedLabel())).c_str());
-	DrawText2D(pad, vp.height - 120, ("Shots: " + std::to_string(shotsHit) + "/" + std::to_string(shotsFired)).c_str());
-	DrawText2D(pad, vp.height - 140, ("Accuracy: " + std::to_string((int)std::round(accuracyPercentage())) + "%").c_str());
+	DrawText2D(10*pad, vp.height - 20, ("Bullet Speed: " + std::string(bulletSpeedLabel())).c_str());
+	DrawText2D(10*pad, vp.height - 40, ("Shots: " + std::to_string(shotsHit) + "/" + std::to_string(shotsFired)).c_str());
+	DrawText2D(10*pad, vp.height - 60, ("Accuracy: " + std::to_string((int)std::round(accuracyPercentage())) + "%").c_str());
 
 	if (isRoundOver()) DrawText2D(vp.width / 2 - 60, vp.height / 2, "ROUND OVER! (Press R to Reset)", GLUT_BITMAP_HELVETICA_18);
+
+	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+	glEnable(GL_DEPTH_TEST);
 }
 
 void Game::handleKey(unsigned char key) {
@@ -290,6 +300,27 @@ void Game::handleKey(unsigned char key) {
 	case 'r':
 	case 'R':
 		resetRound();
+		glutPostRedisplay();
+		break;
+	case ' ':
+		if(gameState == GameState::Playing)
+			fireBulletFromCamera(*cams.controlCam);
+		glutPostRedisplay();
+		break;
+	case 'b':
+	case 'B':
+		// Cycle bullet speed
+		switch (bulletSpeedMode) {
+		case BulletSpeed::Slow:
+			bulletSpeedMode = BulletSpeed::Fast;
+			break;
+		case BulletSpeed::Fast:
+			bulletSpeedMode = BulletSpeed::VeryFast;
+			break;
+		case BulletSpeed::VeryFast:
+			bulletSpeedMode = BulletSpeed::Slow;
+			break;
+		}
 		glutPostRedisplay();
 		break;
 	default:
@@ -405,4 +436,18 @@ void Game::onBulletFired() {
 void Game::onBulletMiss() {
 	if (gameState == GameState::RoundOver) return;
 	killStreak = 0;
+}
+
+void Game::fireBulletFromCamera(const Camera& cam) {
+	if (gameState == GameState::RoundOver) return;
+	if (!cams.controlCam) return;
+
+	Vector3 eye, right, up, forward;
+	cam.getEyeBasis(eye, right, up, forward);
+
+	const Vector3 start = eye + forward * 1.5f;
+	const float speed = currentBulletSpeed();	
+
+	++shotsFired;
+	bulletsFire(bullets, start, forward, speed, 0.6f, 2.0f);
 }

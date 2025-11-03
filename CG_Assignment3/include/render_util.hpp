@@ -50,11 +50,20 @@ void DrawGround(float size = 200.0f, float spacing = 10.0f);
 // Draw coordinate axes at the origin
 void DrawAxes(float size = 5.0f);
 
+// Draw crosshair at the center of the screen
+void DrawCrosshair(int winW, int winH, float size = 10.0f, const Vector3& color = Vector3(1.0f, 1.0f, 1.0f));
+
 // Draw a camera marker and frustum
 void DrawCameraMarker(const Camera& cam, float size = 1.0f, const Vector3& color = Vector3(1.0f,1.0f,1.0f));
 void DrawCameraFrustum(const Camera& cam, float aspect, float scale = 1.0f, const Vector3& color = Vector3(1.0f, 1.0f, 1.0f));
 
+// Draw a camera gun model at the camera position and orientation
+void DrawCameraGun(const Camera& cam, float length = 1.2f, float width = 0.25f, float height = 0.25f,
+	float fwdOffset = 1.0f, float rightOffset = 0.35f, float downOffset = 0.25f,
+	const Vector3& color = Vector3(0.85f, 0.85f, 0.90f));
+
+
 // Draw 2D text on the screen at specified coordinates
-void DrawText2D(float x, float y, const char* text, void* font = GLUT_BITMAP_HELVETICA_18);
+void DrawText2D(float x, float y, const char* text, void* font = GLUT_BITMAP_HELVETICA_12);
 
 #endif //RENDER_UTIL_HPP

@@ -55,3 +55,76 @@ void Bullet::draw(RenderMode mode)const {
 	DrawSphere(mode, m_radius);	
 	glPopMatrix();
 }
+
+void bulletsFire(std::vector<Bullet>& pool,
+	const Vector3& start,
+	const Vector3& dir,
+	float speed,
+	float radius,
+	float ttl)
+{
+	const Vector3 vel = dir * speed;
+	//// Find an inactive bullet in the pool
+	//auto it = std::find_if(pool.begin(), pool.end(),
+	//	[](const Bullet& b) { return !b.active(); });
+	//if (it != pool.end()) {
+	//	Vector3 velocity = dir * speed;
+	//	it->spawn(start, velocity, radius, ttl);
+	//}
+
+	for (auto& b : pool) {
+		if (!b.active()) { 
+			b.spawn(start, vel, radius, ttl); 
+			return; 
+		}
+	}
+
+	Bullet b;
+	b.spawn(start, vel, radius, ttl);
+	pool.push_back(b);
+}
+
+void bulletsDraw(const std::vector<Bullet>& pool, RenderMode mode) {
+	for (const auto& b : pool) {
+		b.draw(mode);
+	}
+}
+
+void bulletsClear(std::vector<Bullet>& pool) {
+	pool.clear();
+}
+
+int bulletsUpdate(std::vector<Bullet>& pool,
+	float dt,
+	std::vector<Robot*>& robots,
+	int& robotsKilled,
+	int& shotsHit,
+	int& score,
+	float distBonusMultiplier,
+	int baseScore
+) {
+	int hits = 0;
+
+	for (auto& b : pool) {
+		if (!b.active()) continue;
+		bool stillActive = b.update(dt);
+		if (!stillActive) continue;
+		// Check for collisions with robots
+		for (auto& r : robots) {
+			if (!r || !r->isAlive()) continue;
+			if (r->isAlive() && r->checkHit(b.pos(), b.radius())) {
+				r->kill();
+				++hits;
+				++shotsHit;
+				++robotsKilled;
+				// Calculate distance bonus
+				float dist = (b.pos() - b.pos()).magnitude();
+				int distBonus = static_cast<int>(dist * distBonusMultiplier);
+				score += baseScore + distBonus;
+				b.deactivate();
+				break; // Bullet can only hit one robot
+			}
+		}
+	}
+	return hits;
+}

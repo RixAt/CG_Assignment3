@@ -97,6 +97,7 @@ void DrawGround(float size, float spacing) {
 }
 
 void DrawAxes(float size) {
+	glPushMatrix();
 	glLineWidth(4.0f);
 	glBegin(GL_LINES);
 	// X red
@@ -112,6 +113,36 @@ void DrawAxes(float size) {
 	glVertex3f(0, 0, 0);
 	glVertex3f(0, 0, size);
 	glEnd();
+	glPopMatrix();
+}
+
+void DrawCrosshair(int winW, int winH, float size, const Vector3& color) {
+	glPushAttrib(GL_ENABLE_BIT | GL_LINE_BIT | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	gluOrtho2D(0, winW, 0, winH);
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+
+	glDisable(GL_DEPTH_TEST);
+	glLineWidth(2.0f);
+	glColor3f(color.x, color.y, color.z);
+	glBegin(GL_LINES);
+	// Horizontal line
+	glVertex2f((winW / 2.0f) - size, winH / 2.0f);
+	glVertex2f((winW / 2.0f) + size, winH / 2.0f);
+	// Vertical line
+	glVertex2f(winW / 2.0f, (winH / 2.0f) - size);
+	glVertex2f(winW / 2.0f, (winH / 2.0f) + size);
+	glEnd();
+
+	glEnable(GL_DEPTH_TEST);
+	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glPopAttrib();
 }
 
 void DrawCameraMarker(const Camera& cam, float size, const Vector3& color) {
@@ -194,6 +225,38 @@ void DrawCameraFrustum(const Camera& cam, float aspect, float scale, const Vecto
 	glEnd();
 	//glEnable(GL_LIGHTING);
 	glPopAttrib();
+}
+
+void DrawCameraGun(const Camera& cam, float length, float width, float height,
+	float fwdOffset, float rightOffset, float downOffset, const Vector3& color) {
+	Vector3 eye, right, up, forward;
+	cam.getEyeBasis(eye, right, up, forward);
+
+	// Compute gun position
+	Vector3 gunPos = eye + forward * fwdOffset + right * rightOffset - up * downOffset;
+
+	glPushMatrix();
+	glTranslatef(gunPos.x, gunPos.y, gunPos.z);
+	// Align with camera orientation
+	GLfloat mat[16] = {
+		right.x, right.y, right.z, 0.0f,
+		up.x,    up.y,    up.z,    0.0f,
+		-forward.x, -forward.y, -forward.z, 0.0f,
+		0.0f,    0.0f,    0.0f,    1.0f
+	};
+	glMultMatrixf(mat);
+
+	glColor3f(color.x, color.y, color.z);
+	glPushMatrix();
+	glTranslatef(0.0f, 0.0f, length / 2.0f);
+	glScalef(width, height, length);
+	DrawCube(RenderMode::Solid);
+	glPopMatrix();
+
+	glColor3f(0.2f, 0.9f, 0.9f);
+	glTranslatef(0.0f, 0.0f, length);
+	glutWireSphere(0.05, 8, 8);
+	glPopMatrix();
 }
 
 void DrawText2D(float x, float y, const char* text, void* font) {
