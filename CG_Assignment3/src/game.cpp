@@ -301,6 +301,7 @@ void Game::handleSpecialKey(int key) {
 	switch (key) {
 	case GLUT_KEY_F1:
 		// Toggle fullscreen
+		toggleFullscreen();
 		break;
 	case GLUT_KEY_F2:
 		// Toggle view mode
@@ -335,3 +336,35 @@ void Game::handleSpecialKey(int key) {
 		break;
 	}
 };	
+
+void Game::toggleFullscreen() {
+	if (!isFullscreen) {
+		prevWinX = glutGet(GLUT_WINDOW_X);
+		prevWinY = glutGet(GLUT_WINDOW_Y);
+		prevWinW = glutGet(GLUT_WINDOW_WIDTH);
+		prevWinH = glutGet(GLUT_WINDOW_HEIGHT);
+		glutFullScreen();
+		isFullscreen = true;
+	}
+	else {
+		glutFullScreen();
+		glutPositionWindow(prevWinX, prevWinY);
+		glutReshapeWindow(prevWinW, prevWinH);
+		isFullscreen = false;
+	}
+	glutPostRedisplay();
+}
+
+const char* Game::bulletSpeedLabel() const {
+	switch (bulletSpeedMode) {
+	case BulletSpeed::Slow:
+		return "Slow";
+	case BulletSpeed::Fast:
+		return "Fast";
+	case BulletSpeed::VeryFast:
+		return "Very Fast";
+	default:
+		return "Unknown";
+	}
+}
+

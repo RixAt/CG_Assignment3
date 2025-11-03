@@ -24,7 +24,7 @@
 #include "render_util.hpp"
 #include "robots.hpp"
 #include "camera.hpp"
-
+#include "bullet.hpp"
 
 class Game {
 public:
@@ -66,6 +66,46 @@ public:
 	bool showCameraMarkers = true;
 	void drawCameraDebugLines(const Camera* exclude, float aspect) const;
 
+	void toggleFullscreen();
+
+private:
+	bool isFullscreen = false;
+	// Last window size before going fullscreen
+	int prevWinX = 100, prevWinY = 100;
+	int prevWinW = 640, prevWinH = 480;
+
+	std::vector<Bullet> bullets;
+	static constexpr size_t maxBullets = 128;
+
+	enum class BulletSpeed {
+		Slow,
+		Fast,
+		VeryFast
+	};
+	BulletSpeed bulletSpeedMode = BulletSpeed::Fast;
+
+	float currentBulletSpeed() const {
+		switch (bulletSpeedMode) {
+			case BulletSpeed::Slow:
+				return 30.0f;
+			case BulletSpeed::Fast:
+				return 60.0f;
+			case BulletSpeed::VeryFast:
+				return 120.0f;
+		}
+		return 30.0f; // Default
+	}
+
+	void fireBulletFromCamera(const Camera& cam);
+	void updateBullets(float dt);
+	void drawBullets(RenderMode mode) const;
+
+	int score = 0;
+	int robotsKilled = 0;
+	float timeRemaining = 60.0f; // seconds
+
+	const char* bulletSpeedLabel() const;
+	
 };
 
 
