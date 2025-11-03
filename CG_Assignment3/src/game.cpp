@@ -65,10 +65,9 @@ void Game::update(float dt) {
 	
 	timeRemaining = std::max(0.0f, timeRemaining - dt);
 	if (timeRemaining <= 0.0f) {
-		endRound();
+		endRound(false);
 	}
 
-	timeSinceLastKill += dt;
 	bulletsUpdate(bullets, dt, robots, robotsKilled, shotsHit, score, 3.0f, 100, &impacts);
 }
 
@@ -224,9 +223,9 @@ void Game::drawHUDViewport(const Viewport& vp) const {
 	DrawText2D(pad, vp.height - 40, ("Score: " + std::to_string(score)).c_str());
 	DrawText2D(pad, vp.height - 60, ("Robots Killed: " + std::to_string(robotsKilled)).c_str());
 	DrawText2D(pad, vp.height - 80, ("Remaining Time: " + std::to_string((int)std::ceilf(timeRemaining)) + " / 30").c_str());
-	DrawText2D(10*pad, vp.height - 20, ("Bullet Speed: " + std::string(bulletSpeedLabel())).c_str());
-	DrawText2D(10*pad, vp.height - 40, ("Shots: " + std::to_string(shotsHit) + "/" + std::to_string(shotsFired)).c_str());
-	DrawText2D(10*pad, vp.height - 60, ("Accuracy: " + std::to_string((int)std::round(accuracyPercentage())) + "%").c_str());
+	DrawText2D(12*pad, vp.height - 20, ("Bullet Speed: " + std::string(bulletSpeedLabel())).c_str());
+	DrawText2D(12*pad, vp.height - 40, ("Shots: " + std::to_string(shotsHit) + "/" + std::to_string(shotsFired)).c_str());
+	DrawText2D(12*pad, vp.height - 60, ("Accuracy: " + std::to_string((int)std::round(accuracyPercentage())) + "%").c_str());
 
 	if (isRoundOver()) DrawText2D(vp.width / 2 - 60, vp.height / 2, "ROUND OVER! (Press R to Reset)", GLUT_BITMAP_HELVETICA_18);
 
@@ -238,6 +237,17 @@ void Game::drawHUDViewport(const Viewport& vp) const {
 }
 
 void Game::handleKey(unsigned char key) {
+	if (gameState == GameState::RoundOver) {
+		if (key == 'r' || key == 'R') {
+			resetRound();
+			glutPostRedisplay();
+			return;
+		} 
+		if (key == 27) exit(0);
+		return;
+	}
+	
+	
 	switch (key) {
 	case 27: // ESC key
 		exit(0);
@@ -332,6 +342,10 @@ void Game::handleKey(unsigned char key) {
 };
 
 void Game::handleSpecialKey(int key) {
+	if (gameState == GameState::RoundOver) {
+		return;
+	}
+
 	switch (key) {
 	case GLUT_KEY_F1:
 		// Toggle fullscreen
@@ -404,8 +418,9 @@ const char* Game::bulletSpeedLabel() const {
 	}
 }
 
-void Game::endRound() {
+void Game::endRound(bool success) {
 	gameState = GameState::RoundOver;
+	missionSuccess = success;
 }
 
 void Game::resetRound() {
@@ -414,8 +429,6 @@ void Game::resetRound() {
 	timeRemaining = 30.0f;
 	shotsFired = 0;
 	shotsHit = 0;
-	killStreak = 0;
-	timeSinceLastKill = 999.9f;
 	gameState = GameState::Playing;
 
 	for (auto* r : robots) delete r;
@@ -433,12 +446,11 @@ void Game::resetRound() {
 
 void Game::onBulletFired() {
 	if (gameState == GameState::RoundOver) return;
-	shotsFired++;
+	//shotsFired++;
 }
 
 void Game::onBulletMiss() {
 	if (gameState == GameState::RoundOver) return;
-	killStreak = 0;
 }
 
 void Game::fireBulletFromCamera(const Camera& cam) {
@@ -453,4 +465,9 @@ void Game::fireBulletFromCamera(const Camera& cam) {
 
 	++shotsFired;
 	bulletsFire(bullets, start, forward, speed, 0.6f, 2.0f);
+}
+
+void Game::resumeFromMenu() {
+	resetRound();
+	glutPostRedisplay();
 }

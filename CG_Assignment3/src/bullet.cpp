@@ -33,6 +33,7 @@ void Bullet::spawn(const Vector3& startPos,
 	m_radius = radius;
 	m_ttl = std::max(0.0f, ttlSec);
 	m_active = (m_ttl > 0.0f);
+	m_scored = false;
 }
 
 bool Bullet::update(float dt) {
@@ -110,7 +111,14 @@ int bulletsUpdate(std::vector<Bullet>& pool,
 	for (auto& b : pool) {
 		if (!b.active()) continue;
 		bool stillActive = b.update(dt);
-		if (!stillActive) continue;
+		if (!stillActive) {
+			if (!b.scored()) {
+				score -= baseScore + 50; // Penalty for missing (-150)
+				if (score < 0) score = 0;
+				b.markScored();
+			}
+			continue;
+		}
 		// Check for collisions with robots
 		for (auto& r : robots) {
 			if (!r || !r->isAlive()) continue;
@@ -119,13 +127,11 @@ int bulletsUpdate(std::vector<Bullet>& pool,
 				++hits;
 				++shotsHit;
 				++robotsKilled;
-				// Calculate distance bonus
-				float dist = (b.pos() - b.pos()).magnitude();
-				int distBonus = static_cast<int>(dist * distBonusMultiplier);
-				score += baseScore + distBonus;
+				score += baseScore;
 				if (impacts) effectsSpawnImpact(*impacts, b.pos());
 
 				b.deactivate();
+				b.markScored();
 				break; // Bullet can only hit one robot
 			}
 		}

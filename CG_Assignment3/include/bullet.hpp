@@ -42,6 +42,9 @@ public:
 	bool active() const { return m_active; };
 	const Vector3& pos() const { return m_pos; };
 	float radius() const { return m_radius; };
+
+	bool scored() const { return m_scored; };
+	void markScored() { m_scored = true; };
 private:
 	Vector3 m_pos{ 0,0,0 }; 
 	Vector3 m_origin{ 0,0,0 };
@@ -49,6 +52,7 @@ private:
 	float m_radius{ 0.5f };
 	float m_ttl{ 0.0f };
 	bool m_active{ false };
+	bool m_scored = false;
 
 };
 

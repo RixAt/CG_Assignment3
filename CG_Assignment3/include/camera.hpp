@@ -124,7 +124,7 @@ public:
 	CameraSystem() {
 		// Initialize cameras
 		cameraFPV.setMode(CameraMode::FirstPerson);
-		cameraFPV.setFPVEyeHeight(1.8f);
+		cameraFPV.setFPVEyeHeight(11.1f);
 		cameraFPV.setPosition(Vector3(0, 2, 10));
 		cameraFPV.setProjection(60.0f, 0.1f, 1000.0f);
 

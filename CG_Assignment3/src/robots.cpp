@@ -19,7 +19,7 @@
 #include "robots.hpp"
 #include <algorithm>
 
-static const float ROBOT_COLLIDER_RADIUS = 20.0f;
+static const float ROBOT_COLLIDER_RADIUS = 15.0f;
 static const float ROBOT_MODEL_Y_OFFSET = 11.5f; // Offset to position model above ground
 
 Robot::Robot()

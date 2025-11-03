@@ -39,10 +39,17 @@ Game game;
 bool clearScreen = false; // Toggle to clear the screen
 bool debugPrint = false; // Toggle to print debug information
 
+enum MenuID {
+	MENU_RESUME = 1,
+	MENU_EXIT = 2
+};
+
 // ====================================================================
 // Forward declarations
 
+
 static void PrintInstructions();
+static void OnPopupMenu(int id);
 static void KeyboardInput(unsigned char key, int x, int y);
 static void SpecialInput(int key, int x, int y);
 static void MyDisplay();
@@ -112,6 +119,18 @@ static void PrintInstructions() {
 		<< "Right click: Open the context menu" << std::endl 
 		<< std::endl 
 		<< "Press 'i' at any time to bring up this information again" << std::endl << std::endl;
+}
+
+static void OnPopupMenu(int id) {
+	switch (id) {
+	case MENU_RESUME:
+		game.resumeFromMenu();
+		glutPostRedisplay();
+		break;
+	case MENU_EXIT:
+		exit(0);
+		break;
+	}
 }
 
 static void KeyboardInput(unsigned char key, int x, int y) {
@@ -225,6 +244,11 @@ int main(int argc, char** argv) {
 	glutReshapeFunc(Reshape);			// Call the reshape function
 	glutKeyboardFunc(KeyboardInput);	// Call the keyboard function
 	glutSpecialFunc(SpecialInput);		// Call the special keyboard function
+
+	int menu = glutCreateMenu(OnPopupMenu);
+	glutAddMenuEntry("Resume", MENU_RESUME);
+	glutAddMenuEntry("Exit", MENU_EXIT);
+	glutAttachMenu(GLUT_RIGHT_BUTTON);
 
 	glutTimerFunc(16, Timer, 0);
 

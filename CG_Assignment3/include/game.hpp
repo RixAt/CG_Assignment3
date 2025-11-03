@@ -41,6 +41,7 @@ public:
 	bool showAxes;
 	bool showColliders;
 	bool motionEnabled;
+	bool missionSuccess = false;
 
 	Game();
 
@@ -72,6 +73,7 @@ public:
 	void toggleFullscreen();
 
 	void fireBulletFromCamera(const Camera& cam);
+	void resumeFromMenu();
 
 private:
 	enum class GameState {
@@ -115,9 +117,6 @@ private:
 	int shotsFired = 0;
 	int shotsHit = 0;
 
-	int killStreak = 0;
-	float streakWindow = 3.0f; // seconds
-	float timeSinceLastKill = 999.9f;
 
 	float accuracyPercentage() const {
 		return shotsFired ? (100.0f * float(shotsHit) / float(shotsFired)) : 0.0f;
@@ -128,7 +127,7 @@ private:
 	void onBulletFired();
 	void onRobotKilled();
 	void onBulletMiss();
-	void endRound();
+	void endRound(bool success);
 	void resetRound();
 
 
