@@ -46,6 +46,8 @@ void Game::init() {
 		robots.push_back(new Robot(spawnPos, 12.0f));
 	}
 
+	bullets.reserve(maxBullets);
+
 	cams.setRenderFPV();
 	cams.controlCam = &cams.cameraFPV;
 }
@@ -53,11 +55,20 @@ void Game::init() {
 // Update game state
 // dt in seconds
 void Game::update(float dt) {
-	if (!motionEnabled) return;
-
-	for (auto& r : robots) {
-		r->update(dt);
+	if (gameState == GameState::RoundOver) return;
+	if (motionEnabled) {
+		for (auto& r : robots) {
+			r->update(dt);
+		}
 	}
+	
+	timeRemaining = std::max(0.0f, timeRemaining - dt);
+	if (timeRemaining <= 0.0f) {
+		endRound();
+	}
+
+	timeSinceLastKill += dt;
+	//updateBullets(dt);
 }
 
 // Draw the game scene
@@ -72,31 +83,6 @@ void Game::draw(int winW, int winH) const {
 	drawMainViewport(viewports.vpMain);
 	drawInsetViewport(viewports.vpInset);
 	drawHUDViewport(viewports.vpHUD);
-
-	/*glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluPerspective(60.0, (float)winW / (float)winH, 0.1, 1000.0);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	cams.renderCam->applyView(winW, winH);
-
-	DrawGround();
-
-	for (const auto& r : robots) {
-		r->draw(g_renderMode);
-
-		if (showColliders) {
-			r->drawColliderDebug();
-		}
-	}
-
-	if (showAxes) {
-		DrawAxes(100.0f);
-	}
-
-	}*/
 
 	const float aspect = (winH > 0) ? (float)winW / (float)winH : 1.0f;
 
@@ -228,10 +214,14 @@ void Game::drawHUDViewport(const Viewport& vp) const {
 
 	const int pad = 12;
 	DrawText2D(pad, vp.height - 20, "Robot Hunter");
-	DrawText2D(pad, vp.height - 40, ("Score: "));
-	DrawText2D(pad, vp.height - 60, ("Robots Killed: "));
-	DrawText2D(pad, vp.height - 80, ("Remaining Time:" ));
+	DrawText2D(pad, vp.height - 40, ("Score: " + std::to_string(score)).c_str());
+	DrawText2D(pad, vp.height - 60, ("Robots Killed: " + std::to_string(robotsKilled)).c_str());
+	DrawText2D(pad, vp.height - 80, ("Remaining Time: " + std::to_string((int)std::ceilf(timeRemaining)) + " / 30").c_str());
+	DrawText2D(pad, vp.height - 100, ("Bullet Speed: " + std::string(bulletSpeedLabel())).c_str());
+	DrawText2D(pad, vp.height - 120, ("Shots: " + std::to_string(shotsHit) + "/" + std::to_string(shotsFired)).c_str());
+	DrawText2D(pad, vp.height - 140, ("Accuracy: " + std::to_string((int)std::round(accuracyPercentage())) + "%").c_str());
 
+	if (isRoundOver()) DrawText2D(vp.width / 2 - 60, vp.height / 2, "ROUND OVER! (Press R to Reset)", GLUT_BITMAP_HELVETICA_18);
 }
 
 void Game::handleKey(unsigned char key) {
@@ -290,6 +280,11 @@ void Game::handleKey(unsigned char key) {
 	case 'e':
 	case 'E':
 		cams.controlCam->elevate(-cams.controlCam->moveSpeed);
+		glutPostRedisplay();
+		break;
+	case 'r':
+	case 'R':
+		resetRound();
 		glutPostRedisplay();
 		break;
 	default:
@@ -355,6 +350,8 @@ void Game::toggleFullscreen() {
 	glutPostRedisplay();
 }
 
+
+
 const char* Game::bulletSpeedLabel() const {
 	switch (bulletSpeedMode) {
 	case BulletSpeed::Slow:
@@ -368,3 +365,39 @@ const char* Game::bulletSpeedLabel() const {
 	}
 }
 
+void Game::endRound() {
+	gameState = GameState::RoundOver;
+}
+
+void Game::resetRound() {
+	score = 0;
+	robotsKilled = 0;
+	timeRemaining = 30.0f;
+	shotsFired = 0;
+	shotsHit = 0;
+	killStreak = 0;
+	timeSinceLastKill = 999.9f;
+	gameState = GameState::Playing;
+
+	for (auto* r : robots) delete r;
+	robots.clear();
+	for (int i = 0; i < 10; ++i) {
+		float x = (std::rand() % 200 - 100);
+		float z = (std::rand() % 200 - 100);
+		Vector3 spawnPos(x, 0.0f, z);
+		robots.push_back(new Robot(spawnPos, 12.0f));
+	}
+
+	bullets.clear();
+
+}
+
+void Game::onBulletFired() {
+	if (gameState == GameState::RoundOver) return;
+	shotsFired++;
+}
+
+void Game::onBulletMiss() {
+	if (gameState == GameState::RoundOver) return;
+	killStreak = 0;
+}

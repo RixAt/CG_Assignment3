@@ -20,6 +20,7 @@
 #define GAME_HPP
 
 #include <vector>
+#include <string>
 #include "utilities.hpp"
 #include "render_util.hpp"
 #include "robots.hpp"
@@ -69,6 +70,12 @@ public:
 	void toggleFullscreen();
 
 private:
+	enum class GameState {
+		Playing,
+		RoundOver
+	};
+	GameState gameState = GameState::Playing;
+
 	bool isFullscreen = false;
 	// Last window size before going fullscreen
 	int prevWinX = 100, prevWinY = 100;
@@ -102,7 +109,27 @@ private:
 
 	int score = 0;
 	int robotsKilled = 0;
-	float timeRemaining = 60.0f; // seconds
+	float timeRemaining = 30.0f; // seconds
+	int shotsFired = 0;
+	int shotsHit = 0;
+
+	int killStreak = 0;
+	float streakWindow = 3.0f; // seconds
+	float timeSinceLastKill = 999.9f;
+
+	float accuracyPercentage() const {
+		return shotsFired ? (100.0f * float(shotsHit) / float(shotsFired)) : 0.0f;
+	}
+
+	bool isRoundOver() const { return gameState == GameState::RoundOver; };
+
+	void onBulletFired();
+	void onRobotKilled();
+	void onBulletMiss();
+	void endRound();
+	void resetRound();
+
+
 
 	const char* bulletSpeedLabel() const;
 	
