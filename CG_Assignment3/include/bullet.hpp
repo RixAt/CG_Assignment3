@@ -31,7 +31,7 @@ public:
 	void spawn(const Vector3& startPos,
 		const Vector3& velocity,
 		float radius = 0.5f,
-		float ttlSec = 2.0f);
+		float ttlSec = 4.0f);
 
 	bool update(float dt);
 	void draw(RenderMode mode) const;
