@@ -12,8 +12,8 @@
 // 
 // ====================================================================
 // File: robots.hpp
-// Description: Header file for Robot class
-// 
+// Description: Header file for Robot class. 
+// Represents enemy robots in the game.
 // ====================================================================
 
 #include "robots.hpp"
@@ -21,6 +21,8 @@
 
 static const float ROBOT_COLLIDER_RADIUS = 15.0f;
 static const float ROBOT_MODEL_Y_OFFSET = 11.5f; // Offset to position model above ground
+
+static const float TWO_PI = 6.28318530718f;
 
 Robot::Robot()
 	: GameObject(Vector3(0.0f, 0.0f, 0.0f)),
@@ -80,9 +82,8 @@ void Robot::drawTorso(RenderMode mode) const {
 
 void Robot::drawArm(RenderMode mode, bool isLeftSide) const {
 	float side = isLeftSide ? -1.0f : 1.0f;
-	const float twoPi = 6.28318530718f;
 	const float phase = isLeftSide ? 0.0f : 3.14159265359f;
-	const float swing = armSwingDeg * std::sinf(stepFreq * animPhase * twoPi + phase);
+	const float swing = armSwingDeg * std::sinf(stepFreq * animPhase * TWO_PI + phase);
 	
 
 	glPushMatrix();
@@ -108,9 +109,8 @@ void Robot::drawArm(RenderMode mode, bool isLeftSide) const {
 
 void Robot::drawLeg(RenderMode mode, bool isLeftSide) const {
 	float side = isLeftSide ? -1.0f : 1.0f;
-	const float twoPi = 6.28318530718f;
 	const float phase = isLeftSide ? 3.14159265359f : 0.0f ;
-	const float swing = legSwingDeg * std::sinf(stepFreq * animPhase * twoPi + phase);
+	const float swing = legSwingDeg * std::sinf(stepFreq * animPhase * TWO_PI + phase);
 
 	glPushMatrix();
 		glTranslatef(1.5f * side, -4.0f, 0.0f);
@@ -139,9 +139,7 @@ void Robot::update(float dt) {
 	position.x = orbitCenter.x + orbitRadius * std::cos(orbitAngle);
 	position.z = orbitCenter.z + orbitRadius * std::sin(orbitAngle);
 
-	const float twoPi = 6.28318530718f;
-
-	position.y = bobAmp * std::sin(bobFreq * animPhase * twoPi);
+	position.y = bobAmp * std::sin(bobFreq * animPhase * TWO_PI);
 
 	animPhase += dt;
 }
