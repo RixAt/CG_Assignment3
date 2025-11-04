@@ -329,13 +329,13 @@ void Game::handleKey(unsigned char key) {
 		// Cycle bullet speed
 		switch (bulletSpeedMode) {
 		case BulletSpeed::Slow:
-			bulletSpeedMode = BulletSpeed::Slow;
-			break;
-		case BulletSpeed::Fast:
 			bulletSpeedMode = BulletSpeed::Fast;
 			break;
-		case BulletSpeed::VeryFast:
+		case BulletSpeed::Fast:
 			bulletSpeedMode = BulletSpeed::VeryFast;
+			break;
+		case BulletSpeed::VeryFast:
+			bulletSpeedMode = BulletSpeed::Slow;
 			break;
 		}
 		glutPostRedisplay();
