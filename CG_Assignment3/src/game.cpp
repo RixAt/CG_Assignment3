@@ -12,8 +12,9 @@
 // 
 // ====================================================================
 // File: game.cpp
-// Description: 
-// 
+// Description: Core game loop/game controller for Robot Hunter.
+// Owns world objects, handles updates and rendering, input handling,
+// HUD, and game state.
 // ====================================================================
 
 #include "game.hpp"
@@ -24,16 +25,20 @@
 
 using namespace std;
 
+// Ctor: Initialize simple game state, toggles
 Game::Game()
 	: g_renderMode(RenderMode::Solid),
 	showAxes(true),
 	showColliders(false),
 	motionEnabled(true)
 {
-	
+	// See init() for scene setup
 }
 
-// Initialize game state
+// init(): Initialize game state
+// Seeds random number generator and spawns robots
+// Preps bullets pool, selects FPV camera for rendering and control
+// Initializes sound system and starts ambient/background music
 void Game::init() {
 	srand(time(nullptr));
 	robots.clear();
@@ -46,34 +51,38 @@ void Game::init() {
 
 		robots.push_back(new Robot(spawnPos,11.0f));
 	}
-
+	// Prepare bullets pool to reduce vector growth
 	bullets.reserve(maxBullets);
 
+	// Default to FPV camera for rendering and control
 	cams.setRenderFPV();
 	cams.controlCam = &cams.cameraFPV;
 
+	// BONUS: Initialize sound system and start ambient/background music
 	sound::init();
-	//sound::setMasterVolume(0.2f);
 	sound::playAmbient("assets/ambience.ogg", 0.50f);
 	sound::playBackground("assets/loop.ogg",0.15f);
 }
 
-// Update game state
-// dt in seconds
+// update(dt): Update game world state over time delta dt (in seconds)
+// Updates robots, bullets, effects, checks round end conditions
 void Game::update(float dt) {
+	// Early out if showing intro or round over
 	if (gameState == GameState::ShowIntro) return;
 	if (gameState == GameState::RoundOver) return;
+	// Update robots if motion enabled
 	if (motionEnabled) {
 		for (auto& r : robots) {
 			r->update(dt);
 		}
 	}
+	// Update effects
 	effectsUpdate(impacts, dt);
 	
-	
-
+	// Advance bullets and check for hits
 	bulletsUpdate(bullets, dt, robots, robotsKilled, shotsHit, score, 3.0f, 100, &impacts);
 
+	// Check if any robots are still alive
 	bool anyAlive = false;
 	for (const auto& r : robots) {
 		if (r && r->isAlive()) {
@@ -82,6 +91,7 @@ void Game::update(float dt) {
 		}
 	}
 
+	// Early mission completion check: all robots dead and at least 50% accuracy
 	if (!anyAlive && timeRemaining > 0.0f && gameState == GameState::Playing) {
 		if (accuracyPercentage() >= 50.0f) {
 			endRound(true);
@@ -92,6 +102,7 @@ void Game::update(float dt) {
 		return;
 	}
 
+	// Countdown time remaining and auto complete round if time expires based on conditions
 	timeRemaining = std::max(0.0f, timeRemaining - dt);
 	if (timeRemaining <= 0.0f && gameState == GameState::Playing) {
 		bool allDead = !anyAlive;
@@ -102,7 +113,9 @@ void Game::update(float dt) {
 	}
 }
 
-// Draw the game scene
+// draw(): Render the game scene to the window of size (winW x winH)
+// Sets up viewports and calls sub-draw methods
+// Note: Depth test is managed per-viewport
 void Game::draw(int winW, int winH) const {
 	glDisable(GL_SCISSOR_TEST);
 	glViewport(0, 0, winW, winH);
@@ -120,6 +133,7 @@ void Game::draw(int winW, int winH) const {
 	glutSwapBuffers();
 }
 
+// drawWorld(): Render the 3D world: ground plane, axes, robots
 void Game::drawWorld() const {
 	DrawGround();
 	if (showAxes) {
@@ -136,6 +150,8 @@ void Game::drawWorld() const {
 
 }
 
+// drawCameraDebugLines(): Draw debug lines for camera frustums and markers
+// Excludes the specified camera from being drawn
 void Game::drawCameraDebugLines(const Camera* exclude, float aspect) const {
 	if (showCameraFrustums) {
 		if (exclude != &cams.cameraFPV) {
@@ -161,7 +177,10 @@ void Game::drawCameraDebugLines(const Camera* exclude, float aspect) const {
 	}
 }
 
-
+// computeViewports(): Compute viewport layouts for main, inset, and HUD viewports
+// Viewport 1: (HUD) top band, height = 1/8 window height
+// Viewport 2: (Main) remaining 7/8
+// Viewport 3: (Inset) top-right corner of main viewport
 Game::ViewportsLayout Game::computeViewports(int winW, int winH) const {
 	ViewportsLayout allViewports{};
 
@@ -169,15 +188,18 @@ Game::ViewportsLayout Game::computeViewports(int winW, int winH) const {
 	const int mainH = std::max(1, winH - hudH);
 	const int mainW = winW;
 
+	// HUD viewport (full width, top band)
 	allViewports.vpHUD.x = 0; allViewports.vpHUD.width = winW;
 	allViewports.vpHUD.height = hudH;
 	allViewports.vpHUD.y = winH - hudH;
 
+	// Main viewport (remaining bottom area)
 	allViewports.vpMain.x = 0;
 	allViewports.vpMain.y = 0;
 	allViewports.vpMain.width = mainW;
 	allViewports.vpMain.height = mainH;
 
+	// Inset viewport (top-right corner of main viewport)
 	const int insetW = std::max(120, mainW / 4);
 	const int insetH = std::max(90, mainH / 4);
 	allViewports.vpInset.width = insetW;
@@ -188,6 +210,12 @@ Game::ViewportsLayout Game::computeViewports(int winW, int winH) const {
 	return allViewports;
 }
 
+// drawMainViewport(): Draw main 3D viewport
+// Clears only this viewport region
+// Applies current render camera (FPV or ESV/free depending on state)
+// Renders world, bullets, and impact FX
+// Optional camera debug overlays (except current)
+// Draws crosshair/gun only in FPV
 void Game::drawMainViewport(const Viewport& vp) const {
 	SetViewport(vp);
 	glClearColor(0.53f, 0.81f, 0.92f, 1);
@@ -211,6 +239,8 @@ void Game::drawMainViewport(const Viewport& vp) const {
 
 }
 
+// drawInsetViewport(): Draw inset 3D viewport
+// Renders the alternate camera view (if main is FPV, inset is ESV, and vice versa)
 void Game::drawInsetViewport(const Viewport& vp) const {
 	SetViewport(vp);
 	glClearColor(0.53f, 0.81f, 0.92f, 1);
@@ -227,8 +257,10 @@ void Game::drawInsetViewport(const Viewport& vp) const {
 	bulletsDraw(bullets, g_renderMode);
 	effectsDrawImpacts(impacts);
 
+	// Draw white border around inset viewport
 	DrawViewportBorder(vp, Vector3(1.0f, 1.0f, 1.0f), 2.0f);
 
+	// Show camera gun in inset if it's the FPV camera
 	if (insetCam == &cams.cameraFPV) {
 		DrawCameraGun(*insetCam);
 	}
@@ -257,11 +289,13 @@ void Game::drawHUDViewport(const Viewport& vp) const {
 
 	glColor3f(1.0f, 1.0f, 1.0f);
 
+	// Responsive coluimns based on viewport size
 	const HudMetrics hudM = ComputeHudMetrics(vp);
 	int yL = vp.height - hudM.padY;
 	int yM = vp.height - hudM.padY;
 	int yR = vp.height - hudM.padY;
 
+	// Left column: title and mission info
 	DrawText2D(hudM.col1X, yL, "Robot Hunter");
 	yL -= (int)std::round(hudM.lineStep * 1.2f); // extra spacing
 	DrawText2D(hudM.col1X, yL, "Obj: Eliminate all robots with >= 50% accuracy");
@@ -271,18 +305,21 @@ void Game::drawHUDViewport(const Viewport& vp) const {
 	DrawText2D(hudM.col1X, yL, "Scoring: +100 hit, -150 miss");
 	yL -= (int)std::round(hudM.lineStep * 1.2f); // extra spacing
 
+	// Middle column: dynamic game stats
 	DrawText2D(hudM.col2X, yM, ("Score: " + std::to_string(score)).c_str());
 	yM -= hudM.lineStep;
 	DrawText2D(hudM.col2X, yM, ("Robots Killed: " + std::to_string(robotsKilled)).c_str());
 	yM -= hudM.lineStep;
 	DrawText2D(hudM.col2X, yM, ("Remaining Time: " + std::to_string((int)std::ceilf(timeRemaining)) + " / 30").c_str());
 
+	// Right column: bullet stats
 	DrawText2D(hudM.col3X, yR, ("Bullet Speed: " + std::string(bulletSpeedLabel())).c_str());
 	yR -= hudM.lineStep;
 	DrawText2D(hudM.col3X, yR, ("Shots: " + std::to_string(shotsHit) + "/" + std::to_string(shotsFired)).c_str());
 	yR -= hudM.lineStep;
 	DrawText2D(hudM.col3X, yR, ("Accuracy: " + std::to_string((int)std::round(accuracyPercentage())) + "%").c_str());
 
+	// Round result message
 	if (isRoundOver()) {
 		const char* resultText = (missionSuccess ? "Mission Successful! Press [R] to reset" : "Mission Failed! Press [R] to reset");
 		yM -= hudM.lineStep;
@@ -349,12 +386,14 @@ void Game::drawHUDViewport(const Viewport& vp) const {
 		//for (const char* s : lines) {
 		//	DrawText2D(hudM.col1X, y, s);
 		//	y -= hudM.lineStep;
-		//	if (y < hudM.padY) break; // safety if the window is very short
+		//	if (y < hudM.padY) break; // safety if the window is very shortdraw
 		//}
 	}
 
+	// Draw white border around HUD viewport
 	DrawViewportBorder(vp, Vector3(1.0f, 1.0f, 1.0f), 2.0f);
 
+	// Restore matrices
 	glPopMatrix();
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
@@ -362,8 +401,11 @@ void Game::drawHUDViewport(const Viewport& vp) const {
 	glEnable(GL_DEPTH_TEST);
 }
 
+// handleKey(): Handle standard key input
+// Handles game state keys (reset, instructions) and in-game controls
 void Game::handleKey(unsigned char key) {
 	if (gameState == GameState::RoundOver || gameState == GameState::ShowIntro) {
+		// While paused or round over, only allow reset, instructions toggle, and quit
 		if (key == 'r' || key == 'R') {
 			sound::playSFX("assets/click.ogg", 0.02f);
 			resetRound();
@@ -421,6 +463,7 @@ void Game::handleKey(unsigned char key) {
 		break;
 	case 'i':
 	case 'I':
+		// Toggle instructions overlay and pause/resume game
 		sound::playSFX("assets/click.ogg", 0.02f);
 		showInstructions = !showInstructions;
 		if (gameState == GameState::ShowIntro) {
@@ -432,17 +475,20 @@ void Game::handleKey(unsigned char key) {
 		glutPostRedisplay();
 		break;
 	case '3':
+		// Switch to free camera
 		sound::playSFX("assets/click.ogg", 0.05f);
 		cams.activateFreeCam();
 		break;
 	case 'm':
 	case 'M':
+		// Toggle robot motion
 		sound::playSFX("assets/click.ogg", 0.05f);
 		motionEnabled = !motionEnabled;
 		glutPostRedisplay();
 		break;
 	case 'd':
 	case 'D':
+		// Toggle camera frustums display
 		sound::playSFX("assets/click.ogg", 0.05f);
 		showCameraFrustums = !showCameraFrustums;
 		glutPostRedisplay();
@@ -459,21 +505,25 @@ void Game::handleKey(unsigned char key) {
 		break;
 	case 'q':
 	case 'Q':
+		// Elevate camera up only if free camera is active
 		cams.controlCam->elevate(cams.controlCam->moveSpeed);
 		glutPostRedisplay();
 		break;
 	case 'e':
 	case 'E':
+		// Elevate camera down only if free camera is active
 		cams.controlCam->elevate(-cams.controlCam->moveSpeed);
 		glutPostRedisplay();
 		break;
 	case 'r':
 	case 'R':
+		// Reset round
 		sound::playSFX("assets/click.ogg", 0.05f);
 		resetRound();
 		glutPostRedisplay();
 		break;
 	case ' ':
+		// Fire bullet from current camera (locked to FPV)
 		if(gameState == GameState::Playing)
 			fireBulletFromCamera(*cams.controlCam);
 		glutPostRedisplay();
@@ -499,7 +549,12 @@ void Game::handleKey(unsigned char key) {
 	}
 };
 
+//handleSpecialKey(): Handle special key input (arrow keys, F-keys)
+// F1: toggle fullscreen
+// F2: toggle FPV/ESV view
+// Arrow keys: move/turn camera
 void Game::handleSpecialKey(int key) {
+	// Early out if round over or showing intro
 	if (gameState == GameState::RoundOver || gameState == GameState::ShowIntro) {
 		return;
 	}
@@ -545,6 +600,7 @@ void Game::handleSpecialKey(int key) {
 	}
 };	
 
+// toggleFullscreen(): Toggle between fullscreen and windowed mode
 void Game::toggleFullscreen() {
 	if (!isFullscreen) {
 		prevWinX = glutGet(GLUT_WINDOW_X);
@@ -563,8 +619,7 @@ void Game::toggleFullscreen() {
 	glutPostRedisplay();
 }
 
-
-
+// bulletSpeedLabel(): Get string label for current bullet speed mode
 const char* Game::bulletSpeedLabel() const {
 	switch (bulletSpeedMode) {
 	case BulletSpeed::Slow:
@@ -578,11 +633,21 @@ const char* Game::bulletSpeedLabel() const {
 	}
 }
 
+// endRound(): End the current round with success/failure
 void Game::endRound(bool success) {
+	
+	// BONUS: Play different sound effects for win/lose
+	if (success) {
+		sound::playSFX("assets/win.ogg",1.0f);
+	}
+	else {
+		sound::playSFX("assets/lose.ogg",0.90f);
+	}
 	gameState = GameState::RoundOver;
 	missionSuccess = success;
 }
 
+// resetRound(): Reset game state for a new round
 void Game::resetRound() {
 	score = 0;
 	robotsKilled = 0;
@@ -604,15 +669,21 @@ void Game::resetRound() {
 
 }
 
+// onBulletFired(): Event handler for when a bullet is fired
+// Not used currently
 void Game::onBulletFired() {
 	if (gameState == GameState::RoundOver) return;
 	//shotsFired++;
 }
 
+// onBulletMiss(): Event handler for when a bullet miss
+// Not used currently
 void Game::onBulletMiss() {
 	if (gameState == GameState::RoundOver) return;
 }
 
+// fireBulletFromCamera(): Fire a bullet from the specified camera's position and orientation
+// Only works if game is active and camera is FPV
 void Game::fireBulletFromCamera(const Camera& cam) {
 	if (gameState == GameState::RoundOver) return;
 	if (!cams.controlCam) return;
@@ -620,25 +691,29 @@ void Game::fireBulletFromCamera(const Camera& cam) {
 	Vector3 eye, right, up, forward;
 	cam.getEyeBasis(eye, right, up, forward);
 
+	// Offset start position slightly forward from camera eye
 	const Vector3 start = eye + forward * 1.5f;
 	const float speed = currentBulletSpeed();	
 
 	++shotsFired;
 	bulletsFire(bullets, start, forward, speed, 0.6f, 5.0f);
-
+	// BONUS: Play sound effect on firing
 	sound::playSFX("assets/shoot.ogg", 1.0f);
 
 }
 
+// resumeFromMenu(): Resume game from menu state
 void Game::resumeFromMenu() {
 	resetRound();
 	glutPostRedisplay();
 }
 
+// isESVMainActive(): Check if the ESV camera is the current main render camera
 bool Game::isESVMainActive() const {
 	return (cams.renderCam == &cams.cameraESV);
 }
 
+// updateArcballCamera(): Update the ESV camera based on arcball parameters
 void Game::updateArcballCamera() {
 	auto& cam = cams.cameraESV;
 	float orbitR = cam.getOrbitRadius();
@@ -648,6 +723,8 @@ void Game::updateArcballCamera() {
 	cam.updateOrbitParam();
 }
 
+// handleMouseButton(): Handle mouse button events for arcball control
+// Left-drag to rotate, right-drag to zoom
 void Game::handleMouseButton(int button, int state, int x, int y) {
 	if (gameState == GameState::RoundOver) return;
 	if (!isESVMainActive()) return;
@@ -664,6 +741,8 @@ void Game::handleMouseButton(int button, int state, int x, int y) {
 	}
 }
 
+// handleMouseMotion(): Handle mouse motion events for arcball control
+// Updates camera orbit angles or zoom based on mouse movement
 void Game::handleMouseMotion(int x, int y) {
 	if (!isESVMainActive()) return;
 

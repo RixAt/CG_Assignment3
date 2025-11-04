@@ -12,7 +12,7 @@
 // 
 // ====================================================================
 // File: camera.hpp
-// Description: 
+// Description: Header file for Camera class and CameraSystem
 // 
 // ====================================================================
 

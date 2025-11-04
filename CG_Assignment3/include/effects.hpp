@@ -12,7 +12,7 @@
 // 
 // ====================================================================
 // File: effects.hpp
-// Description: 
+// Description: Header file for simple visual effects
 // 
 // ====================================================================
 
@@ -23,6 +23,8 @@
 #include "utilities.hpp"
 #include "render_util.hpp"
 
+// Struct: ImpactFX
+// Represents a simple impact effect at a position
 struct ImpactFX {
 	Vector3 pos;
 	float t = 0.0f; // Time elapsed
@@ -34,12 +36,14 @@ struct ImpactFX {
 
 };
 
+// Spawn a new impact effect at position p
 inline void effectsSpawnImpact(std::vector<ImpactFX>& list, const Vector3& p) {
 	ImpactFX fx;
 	fx.pos = p;
 	list.push_back(fx);
 }
 
+// Update impact effects list
 inline void effectsUpdate(std::vector<ImpactFX>& list, float dt) {
 	for (auto& e : list) { e.t += dt; }
 	list.erase(std::remove_if(list.begin(), list.end(),
@@ -47,6 +51,7 @@ inline void effectsUpdate(std::vector<ImpactFX>& list, float dt) {
 		list.end());
 }
 
+// Draw impact effects
 inline void effectsDrawImpacts(const std::vector<ImpactFX>& list) {
 	glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT | GL_CURRENT_BIT);
 	for (const auto& e : list) {

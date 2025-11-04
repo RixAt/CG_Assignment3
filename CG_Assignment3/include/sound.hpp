@@ -41,6 +41,7 @@ namespace sound {
 	void setMusicVolumeOn(const std::string& channel, float volume);
 	bool isMusicPlayingOn(const std::string& channel);
 
+	// Convenience functions for common channels
 	inline bool playAmbient(const std::string& path, float vol = 0.5f) {
 		return playMusicLoopOn("ambient", path, vol);
 	}
@@ -52,7 +53,7 @@ namespace sound {
 	// Play a sound effect
 	void playSFX(const std::string& filepath, float volume = 0.5f);
 	// Stop looped background music
-	void stopMusic();
+	//void stopMusic();
 	// Set master volume
 	void setMasterVolume(float volume); // volume: 0.0 to 1.0
 	
