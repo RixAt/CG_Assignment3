@@ -266,7 +266,7 @@ int main(int argc, char** argv) {
 	int menu = glutCreateMenu(OnPopupMenu);
 	glutAddMenuEntry("Resume", MENU_RESUME);
 	glutAddMenuEntry("Exit", MENU_EXIT);
-	glutAttachMenu(GLUT_RIGHT_BUTTON);
+	glutAttachMenu(GLUT_MIDDLE_BUTTON);
 
 	glutTimerFunc(16, Timer, 0);
 

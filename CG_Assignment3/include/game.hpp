@@ -82,11 +82,11 @@ public:
 		bool zooming = false;
 		int lastX = 0, lastY = 0;
 		float rotSens = 0.008f;
-		float zoomSens = 0.05f;
+		float zoomSens = 0.1f;
 		float minR = 20.0f, maxR = 500.0f;
 	} arcball;
 	void updateArcballCamera();
-	bool isESVMainAcive() const;
+	bool isESVMainActive() const;
 
 private:
 	enum class GameState {
@@ -108,7 +108,7 @@ private:
 		Fast,
 		VeryFast
 	};
-	BulletSpeed bulletSpeedMode = BulletSpeed::Fast;
+	BulletSpeed bulletSpeedMode = BulletSpeed::Slow;
 
 	float currentBulletSpeed() const {
 		switch (bulletSpeedMode) {

@@ -65,9 +65,24 @@ void DrawSphere(RenderMode mode, float radius) {
 }
 
 void DrawPlane(RenderMode mode, float width, float depth, const Vector3& color) {
+	glPushAttrib(GL_CURRENT_BIT | GL_POLYGON_BIT | GL_POINT_BIT | GL_ENABLE_BIT | GL_LINE_BIT);
+	glDisable(GL_LIGHTING);
+	glDisable(GL_CULL_FACE);
 	glColor3f(color.x, color.y, color.z);
 	float w = width / 2.0f;
 	float d = depth / 2.0f;
+
+	switch (mode) {
+	case RenderMode::Solid:
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		break;
+	case RenderMode::Wireframe:
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		break;
+	case RenderMode::Vertices:
+		glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+		break;
+	}
 
 	glBegin(GL_QUADS);
 		glVertex3f(-w, 0.0f, -d);
@@ -75,11 +90,17 @@ void DrawPlane(RenderMode mode, float width, float depth, const Vector3& color) 
 		glVertex3f(w, 0.0f, d);
 		glVertex3f(-w, 0.0f, d);
 	glEnd();
+	glPopAttrib();
 }
 
 void DrawGround(float size, float spacing) {
+	const float halfSize = size / 2.0f;
+	const int numTiles = static_cast<int>(size / spacing);	
 	// Solid ground quad
 	DrawPlane(RenderMode::Solid, size, size, Vector3(0.2f, 0.2f, 0.2f));
+
+	glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT | GL_CURRENT_BIT);
+
 
 	// Adding grid lines to help visualize scale
 	glColor3f(0.3f, 0.3f, 0.3f);
@@ -94,6 +115,8 @@ void DrawGround(float size, float spacing) {
 		glVertex3f(size / 2.0f, 0.01f, i);
 	}
 	glEnd();
+
+	glPopAttrib();
 }
 
 void DrawAxes(float size) {

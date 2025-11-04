@@ -159,8 +159,10 @@ Game::ViewportsLayout Game::computeViewports(int winW, int winH) const {
 
 void Game::drawMainViewport(const Viewport& vp) const {
 	SetViewport(vp);
-	glClearColor(0, 0, 0, 1);
+	glClearColor(0.53f, 0.81f, 0.92f, 1);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
+	glEnable(GL_DEPTH_TEST);
 	
 	cams.renderCam->applyView(vp.width, vp.height);
 	drawWorld();
@@ -180,8 +182,10 @@ void Game::drawMainViewport(const Viewport& vp) const {
 
 void Game::drawInsetViewport(const Viewport& vp) const {
 	SetViewport(vp);
-	glClearColor(0, 0, 0, 1);
+	glClearColor(0.53f, 0.81f, 0.92f, 1);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
+	glEnable(GL_DEPTH_TEST);
 	
 	const Camera* insetCam = (cams.renderCam == &cams.cameraFPV) ? &cams.cameraESV
 							: (cams.renderCam == &cams.cameraESV) ? &cams.cameraFPV
@@ -325,13 +329,13 @@ void Game::handleKey(unsigned char key) {
 		// Cycle bullet speed
 		switch (bulletSpeedMode) {
 		case BulletSpeed::Slow:
-			bulletSpeedMode = BulletSpeed::Fast;
+			bulletSpeedMode = BulletSpeed::Slow;
 			break;
 		case BulletSpeed::Fast:
-			bulletSpeedMode = BulletSpeed::VeryFast;
+			bulletSpeedMode = BulletSpeed::Fast;
 			break;
 		case BulletSpeed::VeryFast:
-			bulletSpeedMode = BulletSpeed::Slow;
+			bulletSpeedMode = BulletSpeed::VeryFast;
 			break;
 		}
 		glutPostRedisplay();
@@ -472,7 +476,7 @@ void Game::resumeFromMenu() {
 	glutPostRedisplay();
 }
 
-bool Game::isESVMainAcive() const {
+bool Game::isESVMainActive() const {
 	return (cams.renderCam == &cams.cameraESV);
 }
 
@@ -487,7 +491,7 @@ void Game::updateArcballCamera() {
 
 void Game::handleMouseButton(int button, int state, int x, int y) {
 	if (gameState == GameState::RoundOver) return;
-	if (!isESVMainAcive()) return;
+	if (!isESVMainActive()) return;
 
 	if (button == GLUT_LEFT_BUTTON) {
 		arcball.rotating = (state == GLUT_DOWN);
@@ -502,7 +506,7 @@ void Game::handleMouseButton(int button, int state, int x, int y) {
 }
 
 void Game::handleMouseMotion(int x, int y) {
-	if (!isESVMainAcive()) return;
+	if (!isESVMainActive()) return;
 
 	int dx = x - arcball.lastX;
 	int dy = y - arcball.lastY;
@@ -526,7 +530,8 @@ void Game::handleMouseMotion(int x, int y) {
 		glutPostRedisplay();
 	}
 	else if (arcball.zooming) {
-		float newR = cam.getOrbitRadius() + (1.0f - dy * arcball.zoomSens);
+		float newR = cam.getOrbitRadius();
+		newR += dy * arcball.zoomSens * 0.5f;
 		if (newR < arcball.minR) newR = arcball.minR;
 		if (newR > arcball.maxR) newR = arcball.maxR;
 		cam.setOrbitRadius(newR);
