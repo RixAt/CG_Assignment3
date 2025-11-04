@@ -12,8 +12,8 @@
 // 
 // ====================================================================
 // File: bullet.cpp
-// Description: 
-// 
+// Description: Implementation of the Bullet class and bullet 
+// management functions. Handles spawning, updating, drawing, etc.
 // ====================================================================
 
 #include "bullet.hpp"
@@ -21,8 +21,11 @@
 #include "effects.hpp"
 #include <algorithm>
 
+// Ctor: Initialize bullet to inactive state
 Bullet::Bullet() = default;
 
+// spawn(): Initializes bullet properties and activates it
+// Also marks it as active so it will be updated and drawn
 void Bullet::spawn(const Vector3& startPos,
 	const Vector3& velocity,
 	float radius,
@@ -36,19 +39,28 @@ void Bullet::spawn(const Vector3& startPos,
 	m_scored = false;
 }
 
+// update(): Updates bullet position and TTL
+// If TTL expires, deactivates the bullet and
+// its returned to the pool
+// Returns true if still active, false if expired this frame
 bool Bullet::update(float dt) {
 	// If not active, dont update
 	if (!m_active) return false;
 
+	// Update position based on velocity and dt
 	m_pos = m_pos + m_vel * dt;
+
+	// Decrease TTL
 	m_ttl -= dt;
 	if (m_ttl <= 0.0f) {
 		m_active = false;
-		return false;
+		return false; // Expired
 	}
-	return true;
+	return true; // Still active
 }
 
+// draw(): Renders the bullet if active
+// Draws a sphere at the bullet position using the specified render mode
 void Bullet::draw(RenderMode mode)const {
 	if (!m_active) return;
 	glPushMatrix();
@@ -58,6 +70,9 @@ void Bullet::draw(RenderMode mode)const {
 	glPopMatrix();
 }
 
+// bulletsFire(): Fires a bullet from the pool from a given start position
+// in the specified direction with speed, radius, and TTL
+// Reuses an inactive bullet from the pool if available, otherwise adds a new one
 void bulletsFire(std::vector<Bullet>& pool,
 	const Vector3& start,
 	const Vector3& dir,
@@ -65,15 +80,10 @@ void bulletsFire(std::vector<Bullet>& pool,
 	float radius,
 	float ttl)
 {
+	// Compute velocity vector
 	const Vector3 vel = dir * speed;
-	//// Find an inactive bullet in the pool
-	//auto it = std::find_if(pool.begin(), pool.end(),
-	//	[](const Bullet& b) { return !b.active(); });
-	//if (it != pool.end()) {
-	//	Vector3 velocity = dir * speed;
-	//	it->spawn(start, velocity, radius, ttl);
-	//}
 
+	// Try to find an inactive bullet to reuse
 	for (auto& b : pool) {
 		if (!b.active()) { 
 			b.spawn(start, vel, radius, ttl); 
@@ -81,21 +91,25 @@ void bulletsFire(std::vector<Bullet>& pool,
 		}
 	}
 
+	// No inactive bullet found, create a new one
 	Bullet b;
 	b.spawn(start, vel, radius, ttl);
 	pool.push_back(b);
 }
 
+// bulletsDraw(): Draws all active bullets in the pool using the specified render mode
 void bulletsDraw(const std::vector<Bullet>& pool, RenderMode mode) {
 	for (const auto& b : pool) {
 		b.draw(mode);
 	}
 }
 
+// bulletsClear(): Clears all bullets from the pool
 void bulletsClear(std::vector<Bullet>& pool) {
 	pool.clear();
 }
 
+// bulletsUpdate(): Updates all bullets in the pool
 int bulletsUpdate(std::vector<Bullet>& pool,
 	float dt,
 	std::vector<Robot*>& robots,
@@ -109,11 +123,14 @@ int bulletsUpdate(std::vector<Bullet>& pool,
 	int hits = 0;
 
 	for (auto& b : pool) {
+		// Skip inactive bullets
 		if (!b.active()) continue;
+
+		// Update bullet position/TTL; if expired, handle miss
 		bool stillActive = b.update(dt);
 		if (!stillActive) {
 			if (!b.scored()) {
-				score -= baseScore + 50; // Penalty for missing (-150)
+				score -= baseScore + 50; // Penalty for missing (-150 total)
 				if (score < 0) score = 0;
 				b.markScored();
 			}
@@ -122,12 +139,15 @@ int bulletsUpdate(std::vector<Bullet>& pool,
 		// Check for collisions with robots
 		for (auto& r : robots) {
 			if (!r || !r->isAlive()) continue;
+
 			if (r->isAlive() && r->checkHit(b.pos(), b.radius())) {
+				// Hit detected; handle robot death and scoring
 				r->kill();
 				++hits;
 				++shotsHit;
 				++robotsKilled;
 				score += baseScore;
+				// Spawn particle impact effect
 				if (impacts) effectsSpawnImpact(*impacts, b.pos());
 
 				b.deactivate();
