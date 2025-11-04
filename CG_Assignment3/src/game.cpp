@@ -63,12 +63,36 @@ void Game::update(float dt) {
 	}
 	effectsUpdate(impacts, dt);
 	
-	timeRemaining = std::max(0.0f, timeRemaining - dt);
-	if (timeRemaining <= 0.0f) {
-		endRound(false);
-	}
+	
 
 	bulletsUpdate(bullets, dt, robots, robotsKilled, shotsHit, score, 3.0f, 100, &impacts);
+
+	bool anyAlive = false;
+	for (const auto& r : robots) {
+		if (r && r->isAlive()) {
+			anyAlive = true;
+			break;
+		}
+	}
+
+	if (!anyAlive && timeRemaining > 0.0f && gameState == GameState::Playing) {
+		if (accuracyPercentage() >= 50.0f) {
+			endRound(true);
+		}
+		else {
+			endRound(false);
+		}
+		return;
+	}
+
+	timeRemaining = std::max(0.0f, timeRemaining - dt);
+	if (timeRemaining <= 0.0f && gameState == GameState::Playing) {
+		bool allDead = !anyAlive;
+		bool goodAccuracy = accuracyPercentage() >= 50.0f;
+
+		endRound(allDead && goodAccuracy);
+		return;
+	}
 }
 
 // Draw the game scene
@@ -224,16 +248,37 @@ void Game::drawHUDViewport(const Viewport& vp) const {
 	glPushMatrix();
 	glLoadIdentity();
 
-	const int pad = 12;
-	DrawText2D(pad, vp.height - 20, "Robot Hunter");
-	DrawText2D(pad, vp.height - 40, ("Score: " + std::to_string(score)).c_str());
-	DrawText2D(pad, vp.height - 60, ("Robots Killed: " + std::to_string(robotsKilled)).c_str());
-	DrawText2D(pad, vp.height - 80, ("Remaining Time: " + std::to_string((int)std::ceilf(timeRemaining)) + " / 30").c_str());
-	DrawText2D(12*pad, vp.height - 20, ("Bullet Speed: " + std::string(bulletSpeedLabel())).c_str());
-	DrawText2D(12*pad, vp.height - 40, ("Shots: " + std::to_string(shotsHit) + "/" + std::to_string(shotsFired)).c_str());
-	DrawText2D(12*pad, vp.height - 60, ("Accuracy: " + std::to_string((int)std::round(accuracyPercentage())) + "%").c_str());
+	const HudMetrics hudM = ComputeHudMetrics(vp);
+	int yL = vp.height - hudM.padY;
+	int yM = vp.height - hudM.padY;
+	int yR = vp.height - hudM.padY;
 
-	if (isRoundOver()) DrawText2D(vp.width / 2 - 60, vp.height / 2, "ROUND OVER! (Press R to Reset)", GLUT_BITMAP_HELVETICA_18);
+	DrawText2D(hudM.col1X, yL, "Robot Hunter");
+	yL -= (int)std::round(hudM.lineStep * 1.2f); // extra spacing
+	DrawText2D(hudM.col1X, yL, "Obj: Eliminate all robots with >= 50% accuracy");
+	yL -= hudM.lineStep;
+	DrawText2D(hudM.col1X, yL, "Time Limit: 30s");
+	yL -= hudM.lineStep;
+	DrawText2D(hudM.col1X, yL, "Scoring: +100 hit, -150 miss");
+	yL -= (int)std::round(hudM.lineStep * 1.2f); // extra spacing
+
+	DrawText2D(hudM.col2X, yM, ("Score: " + std::to_string(score)).c_str());
+	yM -= hudM.lineStep;
+	DrawText2D(hudM.col2X, yM, ("Robots Killed: " + std::to_string(robotsKilled)).c_str());
+	yM -= hudM.lineStep;
+	DrawText2D(hudM.col2X, yM, ("Remaining Time: " + std::to_string((int)std::ceilf(timeRemaining)) + " / 30").c_str());
+
+	DrawText2D(hudM.col3X, yR, ("Bullet Speed: " + std::string(bulletSpeedLabel())).c_str());
+	yR -= hudM.lineStep;
+	DrawText2D(hudM.col3X, yR, ("Shots: " + std::to_string(shotsHit) + "/" + std::to_string(shotsFired)).c_str());
+	yR -= hudM.lineStep;
+	DrawText2D(hudM.col3X, yR, ("Accuracy: " + std::to_string((int)std::round(accuracyPercentage())) + "%").c_str());
+
+	if (isRoundOver()) {
+		const char* resultText = (missionSuccess ? "Mission Successful! Press [R] to reset" : "Mission Failed! Press [R] to reset");
+		yM -= hudM.lineStep;
+		DrawText2D(hudM.col2X, yM, resultText, GLUT_BITMAP_HELVETICA_12);
+	}
 
 	DrawViewportBorder(vp, Vector3(1.0f, 1.0f, 1.0f), 2.0f);
 

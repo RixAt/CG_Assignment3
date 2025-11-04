@@ -88,6 +88,32 @@ public:
 	void updateArcballCamera();
 	bool isESVMainActive() const;
 
+	struct HudMetrics {
+		int padX;        // outer horizontal margin
+		int padY;        // outer vertical margin
+		int lineStep;    // vertical spacing between lines
+		int col1X;       // left column X
+		int col2X;       // middle/right column X
+		int col3X;       // far-right column X
+	};
+
+	static inline HudMetrics ComputeHudMetrics(const Viewport& vp) {
+		HudMetrics m{};
+		// margins as ~2–3% of viewport; clamp to sensible minimums
+		m.padX = std::max(8, (int)std::round(vp.width * 0.02f));
+		m.padY = std::max(10, (int)std::round(vp.height * 0.03f));
+
+		// line height scales with viewport height; clamp for legibility w/ GLUT bitmap fonts
+		m.lineStep = std::max(14, (int)std::round(vp.height * 0.032f));
+
+		// columns as fractions of viewport width (tweak to taste)
+		m.col1X = m.padX;                    // left
+		m.col2X = (int)std::round(vp.width * 0.50f); // middle/right
+		m.col3X = (int)std::round(vp.width * 0.72f); // far-right
+
+		return m;
+	}
+
 private:
 	enum class GameState {
 		Playing,
