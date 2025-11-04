@@ -166,7 +166,7 @@ private:
 	bool isRoundOver() const { return gameState == GameState::RoundOver; };
 
 	void onBulletFired();
-	void onRobotKilled();
+	//void onRobotKilled();
 	void onBulletMiss();
 	void endRound(bool success);
 	void resetRound();

@@ -26,6 +26,7 @@ static const float ROBOT_COLLIDER_RADIUS = 8.0f;
 static const float ROBOT_MODEL_Y_OFFSET = 11.5f; // Offset to position model above ground
 // Constant for 2*PI
 static const float TWO_PI = 6.28318530718f;
+static const float PI = 3.14159265359f;
 
 // Ctors
 // Default constructor places robot at origin with default color, idle animation phase
@@ -34,7 +35,8 @@ Robot::Robot()
 	radius(ROBOT_COLLIDER_RADIUS),
 	animPhase(0.0f),
 	color(0.8f, 0.1f, 0.1f),
-	alive(true)
+	alive(true),
+	danceEnabled(true)
 {
 	orbitCenter = position;
 	orbitRadius = 12.0f;
@@ -47,6 +49,8 @@ Robot::Robot()
 	stepFreq = 2.2f;
 	armSwingDeg = 30.0f;
 	legSwingDeg = 25.0f;
+
+	heading = fmodf((position.x * 0.13f + position.z * 0.47f), 6.28318f);
 }
 
 // Parameterized constructor places robot at given position with given radius
@@ -56,7 +60,8 @@ Robot::Robot(const Vector3& startPos, float r)
 	radius(r),
 	animPhase(0.0f),
 	color(0.8f, 0.1f, 0.1f),
-	alive(true)
+	alive(true),
+	danceEnabled(true)
 {
 	orbitCenter = startPos;
 	orbitRadius = std::max(8.0f, r);
@@ -69,6 +74,8 @@ Robot::Robot(const Vector3& startPos, float r)
 	stepFreq = 2.2f;
 	armSwingDeg = 30.0f;
 	legSwingDeg = 25.0f;
+
+	heading = fmodf((startPos.x * 0.13f + startPos.z * 0.47f), 6.28318f);
 }
 
 // Body helpers
@@ -94,7 +101,7 @@ void Robot::drawTorso(RenderMode mode) const {
 // Each arm consists of upper and lower segments
 void Robot::drawArm(RenderMode mode, bool isLeftSide) const {
 	float side = isLeftSide ? -1.0f : 1.0f;
-	const float phase = isLeftSide ? 0.0f : 3.14159265359f;
+	const float phase = isLeftSide ? 0.0f : PI;
 	const float swing = armSwingDeg * std::sinf(stepFreq * animPhase * TWO_PI + phase);
 	
 
@@ -123,7 +130,7 @@ void Robot::drawArm(RenderMode mode, bool isLeftSide) const {
 // Each leg consists of upper and lower segments
 void Robot::drawLeg(RenderMode mode, bool isLeftSide) const {
 	float side = isLeftSide ? -1.0f : 1.0f;
-	const float phase = isLeftSide ? 3.14159265359f : 0.0f ;
+	const float phase = isLeftSide ? PI : 0.0f ;
 	const float swing = legSwingDeg * std::sinf(stepFreq * animPhase * TWO_PI + phase);
 
 	glPushMatrix();
@@ -151,13 +158,58 @@ void Robot::drawLeg(RenderMode mode, bool isLeftSide) const {
 // Robot orbits around its center point while bobbing up and down
 // Animation phase is incremented for arm/leg swinging
 void Robot::update(float dt) {
-	orbitAngle += orbitSpeed * dt;
-	position.x = orbitCenter.x + orbitRadius * std::cos(orbitAngle);
-	position.z = orbitCenter.z + orbitRadius * std::sin(orbitAngle);
+	if (!alive) return;
 
-	position.y = bobAmp * std::sin(bobFreq * animPhase * TWO_PI);
+	// BONUS: Simple wandering behavior
+	static const float ARENA_HALF = 100.0f;   // Ground boundary
+	static const float TURN_JITTER = 2.5f;     // Random turning (radians/sec)
+	static const float BASE_SPEED_MIN = 4.0f;   // Minimum walking speed
+	static const float BASE_SPEED_MAX = 12.0f;   // Maximum walking speed
 
+	// Handle pause timer (occasional idle)
+	if (pauseTimer > 0.0f) {
+		pauseTimer -= dt;
+		// Gentle idle bob while paused
+		animPhase += dt * 0.5f;
+		position.y = 0.2f * std::sinf(animPhase * 6.28318f);
+		return;
+	}
+
+	// Occasionally choose a new random speed
+	if (rand() % 250 == 0) {
+		walkSpeed = BASE_SPEED_MIN + (rand() % (int)(BASE_SPEED_MAX - BASE_SPEED_MIN + 1));
+	}
+
+	// Occasionally pause for 1 second
+	if (rand() % 500 == 0) {
+		pauseTimer = 1.0f;
+		return;
+	}
+
+	// Small random heading jitter for unique, non-repeating paths
+	float jitter = ((rand() / (float)RAND_MAX) * 2.0f - 1.0f) * TURN_JITTER;
+	heading += jitter * dt;
+
+	// Move forward in facing direction
+	position.x += std::sinf(heading) * walkSpeed * dt;
+	position.z += std::cosf(heading) * walkSpeed * dt;
+
+	// Bounce off platform edges to stay on ground
+	if (position.x > ARENA_HALF) { position.x = ARENA_HALF; heading += PI * 0.75f; }
+	if (position.x < -ARENA_HALF) { position.x = -ARENA_HALF; heading -= PI * 0.75f; }
+	if (position.z > ARENA_HALF) { position.z = ARENA_HALF; heading += PI * 0.75f; }
+	if (position.z < -ARENA_HALF) { position.z = -ARENA_HALF; heading -= PI * 0.75f; }
+
+	// Gentle vertical bobbing as they walk
 	animPhase += dt;
+	const float gaitScale = std::max(0.2f, walkSpeed / 6.0f);
+	position.y = bobAmp * gaitScale * std::sinf(bobFreq * animPhase * TWO_PI);
+	float t = animPhase;
+	/*armSwingDeg = 40.0f * std::sinf(6.0f * t);
+	legSwingDeg = 30.0f * std::sinf(6.0f * t + PI);*/
+	torsoTwistDeg = 15.0f * std::sinf(3.0f * t);
+	headNodDeg = 10.0f * std::sinf(4.0f * t + 1.2f);
+
 }
 
 // Draw(): Draws the robot model at its current position and orientation
@@ -169,8 +221,6 @@ void Robot::draw(RenderMode mode) const {
 		glTranslatef(position.x, position.y, position.z);
 		glTranslatef(0.0f, ROBOT_MODEL_Y_OFFSET, 0.0f);
 
-		float headingDeg = ( - orbitAngle * 180.0f / 3.141592653f) + 90.0f;
-		glRotatef(headingDeg, 0.0f, 1.0f, 0.0f);
 
 		switch (mode) {
 		case RenderMode::Wireframe:
@@ -186,12 +236,23 @@ void Robot::draw(RenderMode mode) const {
 			break;
 		}
 
+		glRotatef(heading * 180.0f / PI, 0, 1, 0);
+
+		glPushMatrix();
+		glRotatef(torsoTwistDeg, 0.0f, 1.0f, 0.0f);
 		drawTorso(mode);
-		drawHead(mode);
+
+		glPushMatrix();
+			//glTranslatef(0, 6, 0);
+			glRotatef(headNodDeg, 1.0f, 0.0f, 0.0f);
+			drawHead(mode);
+		glPopMatrix();
+
 		drawArm(mode, true);
 		drawArm(mode, false);
 		drawLeg(mode, true);
 		drawLeg(mode, false);
+		glPopMatrix();
 
 	glPopMatrix();
 }

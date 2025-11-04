@@ -81,7 +81,7 @@ static void PrintInstructions() {
 		<< "c: Toggle collider display on/off" << std::endl
 		<< "a: Toggle axis display on/off at world origin" << std::endl
 		<< "b: Toggle bullet speed (slow, fast, very fast)" << std::endl
-		<< "m: Toggle robot motion" << std::endl
+		<< "m: Toggle all robot motion" << std::endl
 		<< "d: Toggle camera debug frustums" << std::endl
 		<< "r: Reset mission (after round over)" << std::endl
 		<< "F1: Toggle fullscreen/windowed mode" << std::endl

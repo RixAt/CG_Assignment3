@@ -36,6 +36,7 @@ private:
 	float animPhase;    // Animation phase
 	Vector3 color;      // Base color for rendering
 	bool alive;         // Is the robot alive in the scene?
+	bool danceEnabled;
 
 	// Orbiting parameters
 	Vector3 orbitCenter = Vector3(0.0f, 0.0f, 0.0f);
@@ -51,6 +52,21 @@ private:
 	float stepFreq = 2.2f;
 	float armSwingDeg = 30.0f;
 	float legSwingDeg = 25.0f;
+	float torsoTwistDeg = 0.0f, headNodDeg = 0.0f;
+
+	// Wander params
+	float walkSpeed = 10.0f;     // units/sec
+	float pauseTimer = 0.0f;    // seconds to pause
+	float turnJitter = 0.8f;    // rad/sec random yaw jitter
+	float clampYaw = 2.8f;      // keep heading reasonable
+	float heading = 0.0f;       // current yaw
+	Vector3 velocity{ 0,0,0 };
+
+	// Random waypoint mode (optional)
+	Vector3 waypoint{ 0,0,0 };
+	float waypointRadius = 10.0f;
+	float arenaHalfSize = 200.0f; // keep them inside ground
+
 
 	// Body part helpers
 	void drawTorso(RenderMode mode) const;
@@ -83,6 +99,10 @@ public:
 
 	// Accessor for radius
 	float getRadius() const { return radius; }
+
+	void toggleDance() {
+		danceEnabled = !danceEnabled;
+	}
 
 };
 

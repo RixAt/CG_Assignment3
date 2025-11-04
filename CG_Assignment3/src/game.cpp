@@ -139,7 +139,7 @@ void Game::drawCameraDebugLines(const Camera* exclude, float aspect) const {
 			DrawCameraFrustum(cams.cameraESV, aspect, 1.0f, Vector3(0.2f, 0.7f, 1.0f));
 		}
 		if (exclude != &cams.cameraFree) {
-			DrawCameraFrustum(cams.cameraFree, aspect, 0.5f, Vector3(0.5f, 1.0f, 0.5f));
+			//DrawCameraFrustum(cams.cameraFree, aspect, 0.5f, Vector3(0.5f, 1.0f, 0.5f));
 		}
 	}
 	if (showCameraMarkers) {
@@ -150,7 +150,7 @@ void Game::drawCameraDebugLines(const Camera* exclude, float aspect) const {
 			DrawCameraMarker(cams.cameraESV, 2.0f, Vector3(0.2f, 0.7f, 1.0f));
 		}
 		if (exclude != &cams.cameraFree) {
-			DrawCameraMarker(cams.cameraFree, 2.0f, Vector3(0.5f, 1.0f, 0.5f));
+			//DrawCameraMarker(cams.cameraFree, 2.0f, Vector3(0.5f, 1.0f, 0.5f));
 		}
 	}
 }
@@ -603,7 +603,7 @@ void Game::fireBulletFromCamera(const Camera& cam) {
 	const float speed = currentBulletSpeed();	
 
 	++shotsFired;
-	bulletsFire(bullets, start, forward, speed, 0.6f, 6.0f);
+	bulletsFire(bullets, start, forward, speed, 0.6f, 5.0f);
 }
 
 void Game::resumeFromMenu() {
