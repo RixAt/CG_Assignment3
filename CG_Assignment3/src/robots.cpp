@@ -11,19 +11,24 @@
 // |_| \_\\___/|____/ \___/ |_| |____/ 
 // 
 // ====================================================================
-// File: robots.hpp
-// Description: Header file for Robot class. 
-// Represents enemy robots in the game.
+// File: robots.cpp
+// Description: File for Robot class, implements its drawing,
+// animation, and collision logic. Each robot is a simple humanoid
+// made of cubes and spheres, andimated with bobbing and arm/leg
+// swinging.
 // ====================================================================
 
 #include "robots.hpp"
 #include <algorithm>
 
+// Radius used for robot collision detection
 static const float ROBOT_COLLIDER_RADIUS = 15.0f;
 static const float ROBOT_MODEL_Y_OFFSET = 11.5f; // Offset to position model above ground
-
+// Constant for 2*PI
 static const float TWO_PI = 6.28318530718f;
 
+// Ctors
+// Default constructor places robot at origin with default color, idle animation phase
 Robot::Robot()
 	: GameObject(Vector3(0.0f, 0.0f, 0.0f)),
 	radius(ROBOT_COLLIDER_RADIUS),
@@ -44,6 +49,8 @@ Robot::Robot()
 	legSwingDeg = 25.0f;
 }
 
+// Parameterized constructor places robot at given position with given radius
+// Orbital position is randomized based on startPos for variety
 Robot::Robot(const Vector3& startPos, float r)
 	: GameObject(startPos),
 	radius(r),
@@ -65,7 +72,9 @@ Robot::Robot(const Vector3& startPos, float r)
 }
 
 // Body helpers
+// Each part draws a specific body component with transforms relative to the robot origin
 
+// drawHead(): Draws the robot's head as a sphere
 void Robot::drawHead(RenderMode mode) const {
 	glPushMatrix();
 		glTranslatef(0.0f, 6.0f, 0.0f);
@@ -73,6 +82,7 @@ void Robot::drawHead(RenderMode mode) const {
 	glPopMatrix();
 }
 
+// drawTorso(): Draws the robot's torso as a scaled cube
 void Robot::drawTorso(RenderMode mode) const {
 	glPushMatrix();
 		glScalef(5.0f, 8.0f, 3.0f);
@@ -80,6 +90,8 @@ void Robot::drawTorso(RenderMode mode) const {
 	glPopMatrix();
 }
 
+// drawArm(): Draws one arm (left or right) with swinging animation
+// Each arm consists of upper and lower segments
 void Robot::drawArm(RenderMode mode, bool isLeftSide) const {
 	float side = isLeftSide ? -1.0f : 1.0f;
 	const float phase = isLeftSide ? 0.0f : 3.14159265359f;
@@ -107,6 +119,8 @@ void Robot::drawArm(RenderMode mode, bool isLeftSide) const {
 	glPopMatrix();
 }
 
+// drawLeg(): Draws one leg (left or right) with swinging animation
+// Each leg consists of upper and lower segments
 void Robot::drawLeg(RenderMode mode, bool isLeftSide) const {
 	float side = isLeftSide ? -1.0f : 1.0f;
 	const float phase = isLeftSide ? 3.14159265359f : 0.0f ;
@@ -133,7 +147,9 @@ void Robot::drawLeg(RenderMode mode, bool isLeftSide) const {
 	glPopMatrix();
 }
 
-// Update
+// Update(): Updates robot position and animation phase
+// Robot orbits around its center point while bobbing up and down
+// Animation phase is incremented for arm/leg swinging
 void Robot::update(float dt) {
 	orbitAngle += orbitSpeed * dt;
 	position.x = orbitCenter.x + orbitRadius * std::cos(orbitAngle);
@@ -144,7 +160,8 @@ void Robot::update(float dt) {
 	animPhase += dt;
 }
 
-// Draw
+// Draw(): Draws the robot model at its current position and orientation
+// Applies renderMode and delegates to body part helpers
 void Robot::draw(RenderMode mode) const {
 	if (!alive) return; // Skip drawing if not alive
 
@@ -179,6 +196,8 @@ void Robot::draw(RenderMode mode) const {
 	glPopMatrix();
 }
 
+// drawColliderDebug(): Draws the robot's collision sphere for debugging
+// Visible when debug collider rendering is enabled
 void Robot::drawColliderDebug() const {
 	if (!alive) return; // Skip drawing if not alive
 	glPushMatrix();
@@ -189,6 +208,9 @@ void Robot::drawColliderDebug() const {
 	glPopMatrix();
 }
 
+// checkHit(): Checks if a bullet at bulletPos with bulletRadius hits the robot
+// Returns true if hit detected, false otherwise
+// Uses sphere-sphere collision detection
 bool Robot::checkHit(const Vector3 &bulletPos, float bulletRadius) const{
 	if (!alive) return false; // If not alive, robot was not hit
 
@@ -199,6 +221,7 @@ bool Robot::checkHit(const Vector3 &bulletPos, float bulletRadius) const{
 	return (d.x * d.x + d.y * d.y + d.z * d.z) <= (rr * rr);
 }
 
+// kill(): Marks the robot as dead and deactivates it
 void Robot::kill() {
 	alive = false;
 	active = false;
