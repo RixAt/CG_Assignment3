@@ -472,7 +472,7 @@ void Game::fireBulletFromCamera(const Camera& cam) {
 	const float speed = currentBulletSpeed();	
 
 	++shotsFired;
-	bulletsFire(bullets, start, forward, speed, 0.6f, 2.0f);
+	bulletsFire(bullets, start, forward, speed, 0.6f, 8.0f);
 }
 
 void Game::resumeFromMenu() {

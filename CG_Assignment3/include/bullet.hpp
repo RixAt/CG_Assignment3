@@ -39,7 +39,7 @@ public:
 	void spawn(const Vector3& startPos,
 		const Vector3& velocity,
 		float radius = 0.5f,
-		float ttlSec = 8.0f);
+		float ttlSec = 12.0f);
 
 	// Updates bullet position based on velocity and decreases TTL
 	// Returns true if still active, false if TTL expired
