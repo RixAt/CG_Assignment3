@@ -43,7 +43,7 @@ void Game::init() {
 		float z = (std::rand() % 200 - 100);
 		Vector3 spawnPos(x, 0.0f, z);
 
-		robots.push_back(new Robot(spawnPos, 12.0f));
+		robots.push_back(new Robot(spawnPos,11.0f));
 	}
 
 	bullets.reserve(maxBullets);
@@ -472,7 +472,7 @@ void Game::fireBulletFromCamera(const Camera& cam) {
 	const float speed = currentBulletSpeed();	
 
 	++shotsFired;
-	bulletsFire(bullets, start, forward, speed, 0.6f, 8.0f);
+	bulletsFire(bullets, start, forward, speed, 0.6f, 6.0f);
 }
 
 void Game::resumeFromMenu() {

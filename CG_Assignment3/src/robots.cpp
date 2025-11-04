@@ -22,7 +22,7 @@
 #include <algorithm>
 
 // Radius used for robot collision detection
-static const float ROBOT_COLLIDER_RADIUS = 15.0f;
+static const float ROBOT_COLLIDER_RADIUS = 8.0f;
 static const float ROBOT_MODEL_Y_OFFSET = 11.5f; // Offset to position model above ground
 // Constant for 2*PI
 static const float TWO_PI = 6.28318530718f;
