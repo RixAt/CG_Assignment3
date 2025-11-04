@@ -42,6 +42,7 @@ public:
 	bool showColliders;
 	bool motionEnabled;
 	bool missionSuccess = false;
+	bool showInstructions = true;
 
 	Game();
 
@@ -117,9 +118,10 @@ public:
 private:
 	enum class GameState {
 		Playing,
-		RoundOver
+		RoundOver,
+		ShowIntro
 	};
-	GameState gameState = GameState::Playing;
+	GameState gameState = GameState::ShowIntro;
 
 	bool isFullscreen = false;
 	// Last window size before going fullscreen

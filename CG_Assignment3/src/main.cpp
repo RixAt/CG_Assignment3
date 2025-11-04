@@ -71,37 +71,10 @@ float camYaw = 0.0f; // radians
 
 RenderMode g_rm = RenderMode::Solid;
 
-// Temp ground
-//void drawGround() {
-//	float s = 200.0f;
-//
-//	// solid ground quad
-//	glColor3f(0.2f, 0.2f, 0.2f);
-//	glBegin(GL_QUADS);
-//	glVertex3f(-s, 0.0f, -s);
-//	glVertex3f(s, 0.0f, -s);
-//	glVertex3f(s, 0.0f, s);
-//	glVertex3f(-s, 0.0f, s);
-//	glEnd();
-//
-//	// grid lines to help visualize scale
-//	glColor3f(0.3f, 0.3f, 0.3f);
-//	glLineWidth(1.0f);
-//	glBegin(GL_LINES);
-//	for (float i = -s; i <= s; i += 10.0f) {
-//		// lines parallel to Z
-//		glVertex3f(i, 0.01f, -s);
-//		glVertex3f(i, 0.01f, s);
-//		// lines parallel to X
-//		glVertex3f(-s, 0.01f, i);
-//		glVertex3f(s, 0.01f, i);
-//	}
-//	glEnd();
-//}
 
 
 static void PrintInstructions() {
-	std::cout << "Instructions:" << std::endl
+	std::cout << "Full Instructions:" << std::endl
 		<< "Keyboard------------------------------------------" << std::endl
 		<< "w: Display wireframe model" << std::endl
 		<< "s: Display solid model" << std::endl
@@ -109,16 +82,25 @@ static void PrintInstructions() {
 		<< "a: Toggle axis display on/off at world origin" << std::endl
 		<< "b: Toggle bullet speed (slow, fast, very fast)" << std::endl
 		<< "m: Toggle robot motion" << std::endl
+		<< "d: Toggle camera debug frustums" << std::endl
+		<< "r: Reset mission (after round over)" << std::endl
 		<< "F1: Toggle fullscreen/windowed mode" << std::endl
 		<< "F2: Toggle First Person View(FPV)/Entire Scene View(ESV)" << std::endl
 		<< "Up: Move the camera forward" << std::endl
 		<< "Down: Move the camera backward" << std::endl
 		<< "Left: Rotate the camera left" << std::endl
 		<< "Right: Rotate the camera right" << std::endl
+		<< "z: Move camera left" << std::endl
+		<< "x: Move camera right" << std::endl
 		<< "Space: Shoot a bullet" << std::endl
+		<< "3: Enable free look camera" << std::endl
+		<< "  q: Increase freecam height" << std::endl
+		<< "  e: Decrease freecam height" << std::endl
 		<< "ESC: Exit the program" << std::endl
 		<< "Mouse---------------------------------------------" << std::endl
-		<< "Right click: Open the context menu" << std::endl 
+		<< "Middle click: Open the context menu" << std::endl 
+		<< "Left click/drag: (Arcball/ESV) Rotate the camera" <<std::endl
+		<< "Right click/drag: (Arcball/ESV) Zoom the camera" <<std::endl
 		<< std::endl 
 		<< "Press 'i' at any time to bring up this information again" << std::endl << std::endl;
 }
@@ -139,6 +121,7 @@ static void KeyboardInput(unsigned char key, int x, int y) {
 	if (debugPrint) {
 		std::cout << "[Debug][KeyboardInput] Key pressed: " << key << " at (" << x << ", " << y << ")" << std::endl;
 	}
+	if (key == 'i' || key == 'I') PrintInstructions();
 	game.handleKey(key);
 
 }
@@ -162,32 +145,6 @@ static void MouseMotion(int x, int y) {
 		std::cout << "[Debug][MouseMotion] Mouse moved to (" << x << ", " << y << ")" << std::endl;
 	}
 	game.handleMouseMotion(x, y);
-}
-
-// Temp camera
-void setCamera(int width, int height) {
-	// projection
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluPerspective(
-		60.0,                      // fov
-		(float)width / (float)height,// aspect
-		1.0,                       // near
-		1000.0                     // far
-	);
-
-	// view (simple yaw around Y axis)
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	float lx = sinf(camYaw);
-	float lz = -cosf(camYaw);
-
-	gluLookAt(
-		camX, camY, camZ,          // camera pos
-		camX + lx, camY, camZ + lz,// look target
-		0.0f, 1.0f, 0.0f           // up
-	);
 }
 
 void MyDisplay() {
@@ -244,7 +201,7 @@ int main(int argc, char** argv) {
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitWindowSize(winW, winH); // window size
 	glutInitWindowPosition(0, 0);
-	glutCreateWindow("OpenGL Sample Drawing"); // Rename window title
+	glutCreateWindow("Assignment 3 | Ricky Atkinson | ratkin10");
 
 	PrintInstructions();
 

@@ -55,6 +55,7 @@ void Game::init() {
 // Update game state
 // dt in seconds
 void Game::update(float dt) {
+	if (gameState == GameState::ShowIntro) return;
 	if (gameState == GameState::RoundOver) return;
 	if (motionEnabled) {
 		for (auto& r : robots) {
@@ -248,6 +249,8 @@ void Game::drawHUDViewport(const Viewport& vp) const {
 	glPushMatrix();
 	glLoadIdentity();
 
+	glColor3f(1.0f, 1.0f, 1.0f);
+
 	const HudMetrics hudM = ComputeHudMetrics(vp);
 	int yL = vp.height - hudM.padY;
 	int yM = vp.height - hudM.padY;
@@ -280,6 +283,70 @@ void Game::drawHUDViewport(const Viewport& vp) const {
 		DrawText2D(hudM.col2X, yM, resultText, GLUT_BITMAP_HELVETICA_12);
 	}
 
+	if (!showInstructions) {
+		// 
+	}
+	else {
+		// Full overlay *within* Viewport 1
+		// Dim background for readability
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glColor4f(0.f, 0.f, 0.f, 0.85f);
+		glBegin(GL_QUADS);
+		glVertex2f(0, 0);                glVertex2f(vp.width, 0);
+		glVertex2f(vp.width, vp.height); glVertex2f(0, vp.height);
+		glEnd();
+		glDisable(GL_BLEND);
+		glColor3f(1.0f, 1.0f, 1.0f);
+
+		// Title
+		DrawText2D(hudM.col1X, vp.height - hudM.padY, "Keyboard Controls (Press I to close) [PAUSED]");
+
+		// Lines (fit comfortably in 1/8 height by using tight spacing)
+		const char* lines[] = {
+			"Keys: W wireframe | S solid | V vertices | C colliders",
+			"B bullet speed | M motion | F1 fullscreen | F2 FPV/ESV",
+			"A axes | Arrows move/turn | Space fire | ESC exit",
+			"I toggle instructions/pause game"
+		};
+
+		const int N = (int)(sizeof(lines) / sizeof(lines[0]));
+
+		// Layout metrics for overlay
+		const int yTop = vp.height - hudM.padY - (int)std::round(hudM.lineStep * 1.6f);
+		// Slightly tighter spacing to fit more lines in 1/8 height
+		const int step = std::max(12, (int)std::round(hudM.lineStep * 0.9f));
+
+		// Two columns: split list roughly in half
+		const int perCol = (N + 1) / 2;
+
+		// Column X positions: left margin, and a mid point within the HUD band
+		const int colLeftX = hudM.col1X;
+		const int colRightX = std::max(hudM.col1X + 220, (int)std::round(vp.width * 0.52f));
+
+		// Draw left column
+		int y = yTop;
+		for (int i = 0; i < perCol; ++i) {
+			DrawText2D(colLeftX, y, lines[i]);
+			y -= step;
+			if (y < hudM.padY) break; // safety for tiny windows
+		}
+
+		// Draw right column
+		y = yTop;
+		for (int i = perCol; i < N; ++i) {
+			DrawText2D(colRightX, y, lines[i]);
+			y -= step;
+			if (y < hudM.padY) break;
+		}
+		//int y = vp.height - hudM.padY - (int)std::round(hudM.lineStep * 1.6f);
+		//for (const char* s : lines) {
+		//	DrawText2D(hudM.col1X, y, s);
+		//	y -= hudM.lineStep;
+		//	if (y < hudM.padY) break; // safety if the window is very short
+		//}
+	}
+
 	DrawViewportBorder(vp, Vector3(1.0f, 1.0f, 1.0f), 2.0f);
 
 	glPopMatrix();
@@ -290,12 +357,20 @@ void Game::drawHUDViewport(const Viewport& vp) const {
 }
 
 void Game::handleKey(unsigned char key) {
-	if (gameState == GameState::RoundOver) {
+	if (gameState == GameState::RoundOver || gameState == GameState::ShowIntro) {
 		if (key == 'r' || key == 'R') {
 			resetRound();
 			glutPostRedisplay();
 			return;
 		} 
+		if (key == 'i' || key == 'I') {
+			showInstructions = !showInstructions;
+			if (!showInstructions && gameState == GameState::ShowIntro) {
+				gameState = GameState::Playing;
+			}
+			glutPostRedisplay();
+			return;
+		}
 		if (key == 27) exit(0);
 		return;
 	}
@@ -332,7 +407,14 @@ void Game::handleKey(unsigned char key) {
 		break;
 	case 'i':
 	case 'I':
-		// Print instructions
+		showInstructions = !showInstructions;
+		if (gameState == GameState::ShowIntro) {
+			gameState = GameState::Playing;
+		}
+		else {
+			gameState = GameState::ShowIntro;
+		}
+		glutPostRedisplay();
 		break;
 	case '3':
 		cams.activateFreeCam();
@@ -342,7 +424,11 @@ void Game::handleKey(unsigned char key) {
 		motionEnabled = !motionEnabled;
 		glutPostRedisplay();
 		break;
-
+	case 'd':
+	case 'D':
+		showCameraFrustums = !showCameraFrustums;
+		glutPostRedisplay();
+		break;
 	case 'z':
 	case 'Z':
 		cams.controlCam->moveLeft(cams.controlCam->moveSpeed);
@@ -395,7 +481,7 @@ void Game::handleKey(unsigned char key) {
 };
 
 void Game::handleSpecialKey(int key) {
-	if (gameState == GameState::RoundOver) {
+	if (gameState == GameState::RoundOver || gameState == GameState::ShowIntro) {
 		return;
 	}
 
