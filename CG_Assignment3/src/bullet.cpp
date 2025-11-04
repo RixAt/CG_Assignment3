@@ -20,6 +20,7 @@
 #include "render_util.hpp"
 #include "effects.hpp"
 #include <algorithm>
+#include "sound.hpp"
 
 // Ctor: Initialize bullet to inactive state
 Bullet::Bullet() = default;
@@ -149,6 +150,9 @@ int bulletsUpdate(std::vector<Bullet>& pool,
 				score += baseScore;
 				// Spawn particle impact effect
 				if (impacts) effectsSpawnImpact(*impacts, b.pos());
+
+				sound::playSFX("assets/hit.ogg", 1.0f);
+				sound::playSFX("assets/death.ogg", 0.25f);
 
 				b.deactivate();
 				b.markScored();

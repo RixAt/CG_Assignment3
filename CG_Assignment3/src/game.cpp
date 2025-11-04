@@ -20,6 +20,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
+#include "sound.hpp"
 
 using namespace std;
 
@@ -50,6 +51,11 @@ void Game::init() {
 
 	cams.setRenderFPV();
 	cams.controlCam = &cams.cameraFPV;
+
+	sound::init();
+	//sound::setMasterVolume(0.2f);
+	sound::playAmbient("assets/ambience.ogg", 0.50f);
+	sound::playBackground("assets/loop.ogg",0.15f);
 }
 
 // Update game state
@@ -359,11 +365,13 @@ void Game::drawHUDViewport(const Viewport& vp) const {
 void Game::handleKey(unsigned char key) {
 	if (gameState == GameState::RoundOver || gameState == GameState::ShowIntro) {
 		if (key == 'r' || key == 'R') {
+			sound::playSFX("assets/click.ogg", 0.02f);
 			resetRound();
 			glutPostRedisplay();
 			return;
 		} 
 		if (key == 'i' || key == 'I') {
+			sound::playSFX("assets/click.ogg", 0.02f);
 			showInstructions = !showInstructions;
 			if (!showInstructions && gameState == GameState::ShowIntro) {
 				gameState = GameState::Playing;
@@ -378,35 +386,42 @@ void Game::handleKey(unsigned char key) {
 	
 	switch (key) {
 	case 27: // ESC key
+		sound::playSFX("assets/click.ogg", 0.05f);
 		exit(0);
 		break;
 	case 'w':
 	case 'W':
+		sound::playSFX("assets/click.ogg", 0.05f);
 		g_renderMode = RenderMode::Wireframe;
 		glutPostRedisplay();
 		break;
 	case 's':
 	case 'S':
+		sound::playSFX("assets/click.ogg", 0.05f);
 		g_renderMode = RenderMode::Solid;
 		glutPostRedisplay();
 		break;
 	case 'v':
 	case 'V':
+		sound::playSFX("assets/click.ogg", 0.05f);
 		g_renderMode = RenderMode::Vertices;
 		glutPostRedisplay();
 		break;
 	case 'a':
 	case 'A':
+		sound::playSFX("assets/click.ogg", 0.05f);
 		showAxes = !showAxes;
 		glutPostRedisplay();
 		break;
 	case 'c':
 	case 'C':
+		sound::playSFX("assets/click.ogg", 0.05f);
 		showColliders = !showColliders;
 		glutPostRedisplay();
 		break;
 	case 'i':
 	case 'I':
+		sound::playSFX("assets/click.ogg", 0.02f);
 		showInstructions = !showInstructions;
 		if (gameState == GameState::ShowIntro) {
 			gameState = GameState::Playing;
@@ -417,15 +432,18 @@ void Game::handleKey(unsigned char key) {
 		glutPostRedisplay();
 		break;
 	case '3':
+		sound::playSFX("assets/click.ogg", 0.05f);
 		cams.activateFreeCam();
 		break;
 	case 'm':
 	case 'M':
+		sound::playSFX("assets/click.ogg", 0.05f);
 		motionEnabled = !motionEnabled;
 		glutPostRedisplay();
 		break;
 	case 'd':
 	case 'D':
+		sound::playSFX("assets/click.ogg", 0.05f);
 		showCameraFrustums = !showCameraFrustums;
 		glutPostRedisplay();
 		break;
@@ -451,6 +469,7 @@ void Game::handleKey(unsigned char key) {
 		break;
 	case 'r':
 	case 'R':
+		sound::playSFX("assets/click.ogg", 0.05f);
 		resetRound();
 		glutPostRedisplay();
 		break;
@@ -488,10 +507,12 @@ void Game::handleSpecialKey(int key) {
 	switch (key) {
 	case GLUT_KEY_F1:
 		// Toggle fullscreen
+		sound::playSFX("assets/click.ogg", 0.05f);
 		toggleFullscreen();
 		break;
 	case GLUT_KEY_F2:
 		// Toggle view mode
+		sound::playSFX("assets/click.ogg", 0.05f);
 		cams.toggleFPV_ESV();
 		if (cams.controlCam == &cams.cameraFree) {
 			cams.controlCam = cams.renderCam;
@@ -604,6 +625,9 @@ void Game::fireBulletFromCamera(const Camera& cam) {
 
 	++shotsFired;
 	bulletsFire(bullets, start, forward, speed, 0.6f, 5.0f);
+
+	sound::playSFX("assets/shoot.ogg", 1.0f);
+
 }
 
 void Game::resumeFromMenu() {
