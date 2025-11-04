@@ -196,6 +196,8 @@ void Game::drawInsetViewport(const Viewport& vp) const {
 	bulletsDraw(bullets, g_renderMode);
 	effectsDrawImpacts(impacts);
 
+	DrawViewportBorder(vp, Vector3(1.0f, 1.0f, 1.0f), 2.0f);
+
 	if (insetCam == &cams.cameraFPV) {
 		DrawCameraGun(*insetCam);
 	}
@@ -232,6 +234,8 @@ void Game::drawHUDViewport(const Viewport& vp) const {
 	DrawText2D(12*pad, vp.height - 60, ("Accuracy: " + std::to_string((int)std::round(accuracyPercentage())) + "%").c_str());
 
 	if (isRoundOver()) DrawText2D(vp.width / 2 - 60, vp.height / 2, "ROUND OVER! (Press R to Reset)", GLUT_BITMAP_HELVETICA_18);
+
+	DrawViewportBorder(vp, Vector3(1.0f, 1.0f, 1.0f), 2.0f);
 
 	glPopMatrix();
 	glMatrixMode(GL_PROJECTION);

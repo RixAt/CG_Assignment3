@@ -22,7 +22,6 @@
 #ifndef RENDER_UTIL_HPP
 #define RENDER_UTIL_HPP
 
-
 #include <GL/glut.h>
 #include "utilities.hpp"
 #include "camera.hpp"
@@ -62,6 +61,8 @@ void DrawCameraGun(const Camera& cam, float length = 1.2f, float width = 0.25f, 
 	float fwdOffset = 1.0f, float rightOffset = 0.35f, float downOffset = 0.25f,
 	const Vector3& color = Vector3(0.85f, 0.85f, 0.90f));
 
+// Draw a border around the specified viewport
+void DrawViewportBorder(const Viewport& vp, const Vector3& color, float thickness = 2.0f);
 
 // Draw 2D text on the screen at specified coordinates
 void DrawText2D(float x, float y, const char* text, void* font = GLUT_BITMAP_HELVETICA_12);

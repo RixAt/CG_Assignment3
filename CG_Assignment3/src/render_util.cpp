@@ -282,6 +282,36 @@ void DrawCameraGun(const Camera& cam, float length, float width, float height,
 	glPopMatrix();
 }
 
+void DrawViewportBorder(const Viewport& vp, const Vector3& color, float thickness) {
+	glPushAttrib(GL_ENABLE_BIT | GL_LINE_BIT | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glDisable(GL_DEPTH_TEST);
+	glMatrixMode(GL_PROJECTION); 
+	glPushMatrix();
+	glLoadIdentity();
+	gluOrtho2D(0, vp.width, 0, vp.height);
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+
+	glLineWidth(thickness);
+	glColor3f(color.x, color.y, color.z);
+	glBegin(GL_LINE_LOOP);
+		glVertex2f(0, 0);
+		glVertex2f(vp.width, 0);
+		glVertex2f(vp.width, vp.height);
+		glVertex2f(0, vp.height);
+	glEnd();
+
+	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+
+	glEnable(GL_DEPTH_TEST);
+	glPopAttrib();
+}
+
 void DrawText2D(float x, float y, const char* text, void* font) {
 	glRasterPos2f(x, y);
 	for (const char* c = text; *c != '\0'; ++c) {
