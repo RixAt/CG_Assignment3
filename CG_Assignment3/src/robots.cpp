@@ -14,7 +14,7 @@
 // File: robots.cpp
 // Description: File for Robot class, implements its drawing,
 // animation, and collision logic. Each robot is a simple humanoid
-// made of cubes and spheres, andimated with bobbing and arm/leg
+// made of cubes and spheres, animated with bobbing and arm/leg
 // swinging.
 // ====================================================================
 
