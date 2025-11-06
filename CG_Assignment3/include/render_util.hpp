@@ -22,10 +22,22 @@
 #ifndef RENDER_UTIL_HPP
 #define RENDER_UTIL_HPP
 
-
 #include <GL/glut.h>
 #include "utilities.hpp"
 #include "camera.hpp"
+
+// Struct: Viewport
+// Defines a rectangular viewport area
+struct Viewport {
+	int x, y; // Bottom-left corner
+	int width, height; // Dimensions
+};
+
+// Sets the OpenGL viewport and scissor rectangle
+inline void SetViewport(const Viewport& vp) {
+	glViewport(vp.x, vp.y, vp.width, vp.height);
+	glScissor(vp.x, vp.y, vp.width, vp.height);
+}
 
 // Primitive geometry drawing functions
 void DrawCube(RenderMode mode, float size = 1.0f);
@@ -33,9 +45,26 @@ void DrawSphere(RenderMode mode, float radius = 1.0f);
 void DrawPlane(RenderMode mode, float width, float depth, const Vector3& color);
 
 // Draw a ground plane with grid lines
-void DrawGround(float size = 200.0f, float spacing = 10.0f);
-//
-void DrawCameraMarker(const Camera& cam);
+void DrawGround(float size = 300.0f, float spacing = 10.0f);
+// Draw coordinate axes at the origin
+void DrawAxes(float size = 5.0f);
 
+// Draw crosshair at the center of the screen
+void DrawCrosshair(int winW, int winH, float size = 10.0f, const Vector3& color = Vector3(1.0f, 1.0f, 1.0f));
+
+// Draw a camera marker and frustum
+void DrawCameraMarker(const Camera& cam, float size = 1.0f, const Vector3& color = Vector3(1.0f,1.0f,1.0f));
+void DrawCameraFrustum(const Camera& cam, float aspect, float scale = 1.0f, const Vector3& color = Vector3(1.0f, 1.0f, 1.0f));
+
+// Draw a camera gun model at the camera position and orientation
+void DrawCameraGun(const Camera& cam, float length = 1.2f, float width = 0.25f, float height = 0.25f,
+	float fwdOffset = 1.0f, float rightOffset = 0.35f, float downOffset = 0.25f,
+	const Vector3& color = Vector3(0.85f, 0.85f, 0.90f));
+
+// Draw a border around the specified viewport
+void DrawViewportBorder(const Viewport& vp, const Vector3& color, float thickness = 2.0f);
+
+// Draw 2D text on the screen at specified coordinates
+void DrawText2D(float x, float y, const char* text, void* font = GLUT_BITMAP_HELVETICA_12);
 
 #endif //RENDER_UTIL_HPP

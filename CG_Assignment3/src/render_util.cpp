@@ -65,9 +65,24 @@ void DrawSphere(RenderMode mode, float radius) {
 }
 
 void DrawPlane(RenderMode mode, float width, float depth, const Vector3& color) {
+	glPushAttrib(GL_CURRENT_BIT | GL_POLYGON_BIT | GL_POINT_BIT | GL_ENABLE_BIT | GL_LINE_BIT);
+	glDisable(GL_LIGHTING);
+	glDisable(GL_CULL_FACE);
 	glColor3f(color.x, color.y, color.z);
 	float w = width / 2.0f;
 	float d = depth / 2.0f;
+
+	switch (mode) {
+	case RenderMode::Solid:
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		break;
+	case RenderMode::Wireframe:
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		break;
+	case RenderMode::Vertices:
+		glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+		break;
+	}
 
 	glBegin(GL_QUADS);
 		glVertex3f(-w, 0.0f, -d);
@@ -75,11 +90,17 @@ void DrawPlane(RenderMode mode, float width, float depth, const Vector3& color) 
 		glVertex3f(w, 0.0f, d);
 		glVertex3f(-w, 0.0f, d);
 	glEnd();
+	glPopAttrib();
 }
 
 void DrawGround(float size, float spacing) {
+	const float halfSize = size / 2.0f;
+	const int numTiles = static_cast<int>(size / spacing);	
 	// Solid ground quad
 	DrawPlane(RenderMode::Solid, size, size, Vector3(0.2f, 0.2f, 0.2f));
+
+	glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT | GL_CURRENT_BIT);
+
 
 	// Adding grid lines to help visualize scale
 	glColor3f(0.3f, 0.3f, 0.3f);
@@ -94,27 +115,206 @@ void DrawGround(float size, float spacing) {
 		glVertex3f(size / 2.0f, 0.01f, i);
 	}
 	glEnd();
+
+	glPopAttrib();
 }
 
-void DrawCameraMarker(const Camera& cam) {
+void DrawAxes(float size) {
 	glPushMatrix();
-		glTranslatef(cam.position.x, cam.position.y, cam.position.z);
-		glRotatef(-cam.yaw * 180.0f / 3.14159f, 0.0f, 1.0f, 0.0f);
-		glRotatef(-cam.pitch * 180.0f / 3.14159f, 1.0f, 0.0f, 0.0f);
-		glColor3f(1.0f, 0.8f, 0.0f);
-		glBegin(GL_TRIANGLES);
-			glVertex3f(0.0f, 0.5f, 0.0f); glVertex3f(-0.2f, 0.0f, 0.3f); glVertex3f(0.2f, 0.0f, 0.3f);
-			glVertex3f(0.0f, 0.5f, 0.0f); glVertex3f(0.2f, 0.0f, 0.3f);  glVertex3f(0.2f, 0.0f, -0.3f);
-			glVertex3f(0.0f, 0.5f, 0.0f); glVertex3f(0.2f, 0.0f, -0.3f); glVertex3f(-0.2f, 0.0f, -0.3f);
-			glVertex3f(0.0f, 0.5f, 0.0f); glVertex3f(-0.2f, 0.0f, -0.3f); glVertex3f(-0.2f, 0.0f, 0.3f);
-		glEnd();
-		glColor3f(1.0f, 0.5f, 0.0f);
-		glBegin(GL_QUADS);
-			glVertex3f(-0.1f, 0.0f, 0.2f);
-			glVertex3f(0.1f, 0.0f, 0.2f); 
-			glVertex3f(0.1f, 0.0f, -0.2f); 
-			glVertex3f(-0.1f, 0.0f, -0.2f);
-		glEnd();
+	glLineWidth(4.0f);
+	glBegin(GL_LINES);
+	// X red
+	glColor3f(1, 0, 0);
+	glVertex3f(0, 0, 0);
+	glVertex3f(size, 0, 0);
+	// Y green
+	glColor3f(0, 1, 0);
+	glVertex3f(0, 0, 0);
+	glVertex3f(0, size, 0);
+	// Z blue
+	glColor3f(0, 0, 1);
+	glVertex3f(0, 0, 0);
+	glVertex3f(0, 0, size);
+	glEnd();
+	glPopMatrix();
+}
+
+void DrawCrosshair(int winW, int winH, float size, const Vector3& color) {
+	glPushAttrib(GL_ENABLE_BIT | GL_LINE_BIT | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	gluOrtho2D(0, winW, 0, winH);
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+
+	glDisable(GL_DEPTH_TEST);
+	glLineWidth(2.0f);
+	glColor3f(color.x, color.y, color.z);
+	glBegin(GL_LINES);
+	// Horizontal line
+	glVertex2f((winW / 2.0f) - size, winH / 2.0f);
+	glVertex2f((winW / 2.0f) + size, winH / 2.0f);
+	// Vertical line
+	glVertex2f(winW / 2.0f, (winH / 2.0f) - size);
+	glVertex2f(winW / 2.0f, (winH / 2.0f) + size);
+	glEnd();
+
+	glEnable(GL_DEPTH_TEST);
+	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glPopAttrib();
+}
+
+void DrawCameraMarker(const Camera& cam, float size, const Vector3& color) {
+	Vector3 eye, right, up, forward;
+	cam.getEyeBasis(eye, right, up, forward);
+
+	const Vector3 tip = eye + forward * (size * 1.5f);
+	const Vector3 baseLeft = eye - right * (size * 0.6f) - up * (size * 0.3f);
+	const Vector3 baseRight = eye + right * (size * 0.6f) - up * (size * 0.3f);
+	const Vector3 baseUp = eye + up * (size * 0.6f);
+	const Vector3 baseDown = eye - up * (size * 0.6f);
+
+	glPushAttrib(GL_ENABLE_BIT | GL_LINE_BIT | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glLineWidth(1.5f);
+	glColor3f(color.x, color.y, color.z);
+	glBegin(GL_LINES);
+	glVertex3f(baseLeft.x, baseLeft.y, baseLeft.z); glVertex3f(tip.x, tip.y, tip.z);
+	glVertex3f(baseRight.x, baseRight.y, baseRight.z); glVertex3f(tip.x, tip.y, tip.z);
+	glVertex3f(baseUp.x, baseUp.y, baseUp.z); glVertex3f(tip.x, tip.y, tip.z);
+	glVertex3f(baseDown.x, baseDown.y, baseDown.z); glVertex3f(tip.x, tip.y, tip.z);
+
+	glVertex3f(baseLeft.x, baseLeft.y, baseLeft.z); glVertex3f(baseRight.x, baseRight.y, baseRight.z);
+	glVertex3f(baseUp.x, baseUp.y, baseUp.z); glVertex3f(baseDown.x, baseDown.y, baseDown.z);
+
+	const float a = size * 0.8f;
+	glVertex3f(eye.x, eye.y, eye.z); glVertex3f(eye.x + forward.x * a, eye.y + forward.y * a, eye.z + forward.z * a);
+	glVertex3f(eye.x, eye.y, eye.z); glVertex3f(eye.x + right.x * a * 0.7f, eye.y + right.y * a * 0.7f, eye.z + right.z * a * 0.7f);
+	glVertex3f(eye.x, eye.y, eye.z); glVertex3f(eye.x + up.x * a * 0.7f, eye.y + up.y * a * 0.7f, eye.z + up.z * a * 0.7f);
+
+	glEnd();
+	glPopAttrib();
+	//glEnable(GL_LIGHTING);
+}
+
+void DrawCameraFrustum(const Camera& cam, float aspect, float scale, const Vector3& color) {
+	Vector3 eye, right, up, forward;
+	cam.getEyeBasis(eye, right, up, forward);
+	const float fovYdeg = cam.getFovY();
+	const float zn = cam.getNearZ() * scale;
+	const float zf = cam.getFarZ() * scale;
+
+	const float fovYrad = fovYdeg * 3.14159f / 180.0f;
+	const float hNear = 2.0f * std::tanf(fovYrad / 2.0f) * zn; // height of near plane
+	const float wNear = hNear * aspect; // width of near plane
+	const float hFar = 2.0f * std::tanf(fovYrad / 2.0f) * zf; // height of far plane
+	const float wFar = hFar * aspect; // width of far plane
+
+	const Vector3 nc = eye + forward * zn; // near center
+	const Vector3 fc = eye + forward * zf; // far center
+
+	const Vector3 ntl = nc + (up * (hNear / 2.0f)) - (right * (wNear / 2.0f));
+	const Vector3 ntr = nc + (up * (hNear / 2.0f)) + (right * (wNear / 2.0f));
+	const Vector3 nbl = nc - (up * (hNear / 2.0f)) - (right * (wNear / 2.0f));
+	const Vector3 nbr = nc - (up * (hNear / 2.0f)) + (right * (wNear / 2.0f));
+
+	const Vector3 ftl = fc + (up * (hFar / 2.0f)) - (right * (wFar / 2.0f));
+	const Vector3 ftr = fc + (up * (hFar / 2.0f)) + (right * (wFar / 2.0f));
+	const Vector3 fbl = fc - (up * (hFar / 2.0f)) - (right * (wFar / 2.0f));
+	const Vector3 fbr = fc - (up * (hFar / 2.0f)) + (right * (wFar / 2.0f));
+
+	glPushAttrib(GL_ENABLE_BIT | GL_LINE_BIT | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//glDisable(GL_LIGHTING);
+	glLineWidth(1.5f);
+	glColor3f(color.x, color.y, color.z);
+	glBegin(GL_LINES);
+		// Near rectangle
+		glVertex3f(ntl.x, ntl.y, ntl.z); glVertex3f(ntr.x, ntr.y, ntr.z); glVertex3f(ntr.x, ntr.y, ntr.z); glVertex3f(nbr.x, nbr.y, nbr.z);
+		glVertex3f(nbr.x, nbr.y, nbr.z); glVertex3f(nbl.x, nbl.y, nbl.z); glVertex3f(nbl.x, nbl.y, nbl.z); glVertex3f(ntl.x, ntl.y, ntl.z);
+		// Far rectangle
+		glVertex3f(ftl.x, ftl.y, ftl.z); glVertex3f(ftr.x, ftr.y, ftr.z); glVertex3f(ftr.x, ftr.y, ftr.z); glVertex3f(fbr.x, fbr.y, fbr.z);
+		glVertex3f(fbr.x, fbr.y, fbr.z); glVertex3f(fbl.x, fbl.y, fbl.z); glVertex3f(fbl.x, fbl.y, fbl.z); glVertex3f(ftl.x, ftl.y, ftl.z);
+		// Connecting both rectangles
+		glVertex3f(ntl.x, ntl.y, ntl.z); glVertex3f(ftl.x, ftl.y, ftl.z); glVertex3f(ntr.x, ntr.y, ntr.z); glVertex3f(ftr.x, ftr.y, ftr.z);
+		glVertex3f(nbl.x, nbl.y, nbl.z); glVertex3f(fbl.x, fbl.y, fbl.z); glVertex3f(nbr.x, nbr.y, nbr.z); glVertex3f(fbr.x, fbr.y, fbr.z);
+		// Lines from eye to plane corners
+		glVertex3f(eye.x, eye.y, eye.z); glVertex3f(ntl.x, ntl.y, ntl.z); glVertex3f(eye.x, eye.y, eye.z); glVertex3f(ntr.x, ntr.y, ntr.z);
+		glVertex3f(eye.x, eye.y, eye.z); glVertex3f(nbl.x, nbl.y, nbl.z); glVertex3f(eye.x, eye.y, eye.z); glVertex3f(nbr.x, nbr.y, nbr.z);
+
+
+	glEnd();
+	//glEnable(GL_LIGHTING);
+	glPopAttrib();
+}
+
+void DrawCameraGun(const Camera& cam, float length, float width, float height,
+	float fwdOffset, float rightOffset, float downOffset, const Vector3& color) {
+	Vector3 eye, right, up, forward;
+	cam.getEyeBasis(eye, right, up, forward);
+
+	// Compute gun position
+	Vector3 gunPos = eye + forward * fwdOffset + right * rightOffset - up * downOffset;
+
+	glPushMatrix();
+	glTranslatef(gunPos.x, gunPos.y, gunPos.z);
+	// Align with camera orientation
+	GLfloat mat[16] = {
+		right.x, right.y, right.z, 0.0f,
+		up.x,    up.y,    up.z,    0.0f,
+		-forward.x, -forward.y, -forward.z, 0.0f,
+		0.0f,    0.0f,    0.0f,    1.0f
+	};
+	glMultMatrixf(mat);
+
+	glColor3f(color.x, color.y, color.z);
+	glPushMatrix();
+	glTranslatef(0.0f, 0.0f, length / 2.0f);
+	glScalef(width, height, length);
+	DrawCube(RenderMode::Solid);
+	glPopMatrix();
+
+	glColor3f(0.2f, 0.9f, 0.9f);
+	glTranslatef(0.0f, 0.0f, length);
+	glutWireSphere(0.05, 8, 8);
+	glPopMatrix();
+}
+
+void DrawViewportBorder(const Viewport& vp, const Vector3& color, float thickness) {
+	glPushAttrib(GL_ENABLE_BIT | GL_LINE_BIT | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glDisable(GL_DEPTH_TEST);
+	glMatrixMode(GL_PROJECTION); 
+	glPushMatrix();
+	glLoadIdentity();
+	gluOrtho2D(0, vp.width, 0, vp.height);
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+
+	glLineWidth(thickness);
+	glColor3f(color.x, color.y, color.z);
+	glBegin(GL_LINE_LOOP);
+		glVertex2f(0, 0);
+		glVertex2f(vp.width, 0);
+		glVertex2f(vp.width, vp.height);
+		glVertex2f(0, vp.height);
+	glEnd();
 
 	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+
+	glEnable(GL_DEPTH_TEST);
+	glPopAttrib();
+}
+
+void DrawText2D(float x, float y, const char* text, void* font) {
+	glRasterPos2f(x, y);
+	for (const char* c = text; *c != '\0'; ++c) {
+		glutBitmapCharacter(font, *c);
+	}
 }

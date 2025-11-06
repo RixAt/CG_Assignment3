@@ -137,23 +137,32 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="include\bullet.hpp" />
     <ClInclude Include="include\camera.hpp" />
+    <ClInclude Include="include\effects.hpp" />
     <ClInclude Include="include\game.hpp" />
     <ClInclude Include="include\gameobject.hpp" />
     <ClInclude Include="include\GL\freeglut_std.h" />
     <ClInclude Include="include\GL\glut.h" />
+    <ClInclude Include="include\IrrKlang\irrKlang.h" />
     <ClInclude Include="include\render_util.hpp" />
     <ClInclude Include="include\robots.hpp" />
+    <ClInclude Include="include\sound.hpp" />
     <ClInclude Include="include\utilities.hpp" />
     <ClInclude Include="lib\freeglut.lib" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\bullet.cpp" />
     <ClCompile Include="src\camera.cpp" />
+    <ClCompile Include="src\effects.cpp" />
     <ClCompile Include="src\game.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\render_util.cpp" />
     <ClCompile Include="src\robots.cpp" />
+    <ClCompile Include="src\sound.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="lib\irrKlang.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

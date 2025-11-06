@@ -35,6 +35,7 @@ struct Vector3 {
 	Vector3 operator+(const Vector3& v) const { return Vector3(x + v.x, y + v.y, z + v.z); }      // Vector addition
 	Vector3 operator-(const Vector3& v) const { return Vector3(x - v.x, y - v.y, z - v.z); }      // Vector subtraction
 	Vector3 operator*(float scalar) const { return Vector3(x * scalar, y * scalar, z * scalar); } // Scalar multiplication
+	Vector3 operator/(float scalar) const { return Vector3(x / scalar, y / scalar, z / scalar); } // Scalar division
 
 	// Magnitude 
 	float magnitude() const { return std::sqrt(x * x + y * y + z * z); }
