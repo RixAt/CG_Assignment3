@@ -46,8 +46,6 @@ enum MenuID {
 
 // ====================================================================
 // Forward declarations
-
-
 static void PrintInstructions();
 static void OnPopupMenu(int id);
 static void KeyboardInput(unsigned char key, int x, int y);
@@ -57,19 +55,8 @@ static void MouseMotion(int x, int y);
 static void MyDisplay();
 static void Reshape(int w, int h);
 
-
 // ====================================================================
 
-// Testing robot object (remove before use)
-Robot g_robot;
-Robot g_robot_2(Vector3(0.0f, 10.0f, -30.0f), 10.0f);
-
-float camX = 0.0f;
-float camY = 20.0f;
-float camZ = 40.0f;
-float camYaw = 0.0f; // radians
-
-RenderMode g_rm = RenderMode::Solid;
 
 
 
@@ -148,38 +135,6 @@ static void MouseMotion(int x, int y) {
 }
 
 void MyDisplay() {
-	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	//if (clearScreen) {
-	//	glutSwapBuffers();
-	//	return;
-	//}
-
-	//setCamera(winW, winH);
-
-	//glLineWidth(2.0f);
-	//glBegin(GL_LINES);
-	//// X red
-	//glColor3f(1, 0, 0);
-	//glVertex3f(0, 0, 0);
-	//glVertex3f(20, 0, 0);
-	//// Y green
-	//glColor3f(0, 1, 0);
-	//glVertex3f(0, 0, 0);
-	//glVertex3f(0, 20, 0);
-	//// Z blue
-	//glColor3f(0, 0, 1);
-	//glVertex3f(0, 0, 0);
-	//glVertex3f(0, 0, 20);
-	//glEnd();
-
-	//drawGround();
-	//g_robot.draw(g_rm);
-	//g_robot_2.draw(g_rm);
-
-	//glFlush();
-	//glutSwapBuffers(); // swap buffers 
-
 	game.draw(winW, winH);
 }
 
