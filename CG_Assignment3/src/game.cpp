@@ -60,8 +60,8 @@ void Game::init() {
 
 	// BONUS: Initialize sound system and start ambient/background music
 	sound::init();
-	sound::playAmbient("assets/ambience.ogg", 0.50f);
-	sound::playBackground("assets/loop.ogg",0.15f);
+	sound::playAmbient("assets/audio/ambience.ogg", 0.50f);
+	sound::playBackground("assets/audio/loop.ogg",0.15f);
 }
 
 // update(dt): Update game world state over time delta dt (in seconds)
@@ -407,13 +407,13 @@ void Game::handleKey(unsigned char key) {
 	if (gameState == GameState::RoundOver || gameState == GameState::ShowIntro) {
 		// While paused or round over, only allow reset, instructions toggle, and quit
 		if (key == 'r' || key == 'R') {
-			sound::playSFX("assets/click.ogg", 0.02f);
+			sound::playSFX("assets/audio/click.ogg", 0.02f);
 			resetRound();
 			glutPostRedisplay();
 			return;
 		} 
 		if (key == 'i' || key == 'I') {
-			sound::playSFX("assets/click.ogg", 0.02f);
+			sound::playSFX("assets/audio/click.ogg", 0.02f);
 			showInstructions = !showInstructions;
 			if (!showInstructions && gameState == GameState::ShowIntro) {
 				gameState = GameState::Playing;
@@ -428,43 +428,43 @@ void Game::handleKey(unsigned char key) {
 	
 	switch (key) {
 	case 27: // ESC key
-		sound::playSFX("assets/click.ogg", 0.05f);
+		sound::playSFX("assets/audio/click.ogg", 0.05f);
 		exit(0);
 		break;
 	case 'w':
 	case 'W':
-		sound::playSFX("assets/click.ogg", 0.05f);
+		sound::playSFX("assets/audio/click.ogg", 0.05f);
 		g_renderMode = RenderMode::Wireframe;
 		glutPostRedisplay();
 		break;
 	case 's':
 	case 'S':
-		sound::playSFX("assets/click.ogg", 0.05f);
+		sound::playSFX("assets/audio/click.ogg", 0.05f);
 		g_renderMode = RenderMode::Solid;
 		glutPostRedisplay();
 		break;
 	case 'v':
 	case 'V':
-		sound::playSFX("assets/click.ogg", 0.05f);
+		sound::playSFX("assets/audio/click.ogg", 0.05f);
 		g_renderMode = RenderMode::Vertices;
 		glutPostRedisplay();
 		break;
 	case 'a':
 	case 'A':
-		sound::playSFX("assets/click.ogg", 0.05f);
+		sound::playSFX("assets/audio/click.ogg", 0.05f);
 		showAxes = !showAxes;
 		glutPostRedisplay();
 		break;
 	case 'c':
 	case 'C':
-		sound::playSFX("assets/click.ogg", 0.05f);
+		sound::playSFX("assets/audio/click.ogg", 0.05f);
 		showColliders = !showColliders;
 		glutPostRedisplay();
 		break;
 	case 'i':
 	case 'I':
 		// Toggle instructions overlay and pause/resume game
-		sound::playSFX("assets/click.ogg", 0.02f);
+		sound::playSFX("assets/audio/click.ogg", 0.02f);
 		showInstructions = !showInstructions;
 		if (gameState == GameState::ShowIntro) {
 			gameState = GameState::Playing;
@@ -476,20 +476,20 @@ void Game::handleKey(unsigned char key) {
 		break;
 	case '3':
 		// Switch to free camera
-		sound::playSFX("assets/click.ogg", 0.05f);
+		sound::playSFX("assets/audio/click.ogg", 0.05f);
 		cams.activateFreeCam();
 		break;
 	case 'm':
 	case 'M':
 		// Toggle robot motion
-		sound::playSFX("assets/click.ogg", 0.05f);
+		sound::playSFX("assets/audio/click.ogg", 0.05f);
 		motionEnabled = !motionEnabled;
 		glutPostRedisplay();
 		break;
 	case 'd':
 	case 'D':
 		// Toggle camera frustums display
-		sound::playSFX("assets/click.ogg", 0.05f);
+		sound::playSFX("assets/audio/click.ogg", 0.05f);
 		showCameraFrustums = !showCameraFrustums;
 		glutPostRedisplay();
 		break;
@@ -518,7 +518,7 @@ void Game::handleKey(unsigned char key) {
 	case 'r':
 	case 'R':
 		// Reset round
-		sound::playSFX("assets/click.ogg", 0.05f);
+		sound::playSFX("assets/audio/click.ogg", 0.05f);
 		resetRound();
 		glutPostRedisplay();
 		break;
@@ -562,12 +562,12 @@ void Game::handleSpecialKey(int key) {
 	switch (key) {
 	case GLUT_KEY_F1:
 		// Toggle fullscreen
-		sound::playSFX("assets/click.ogg", 0.05f);
+		sound::playSFX("assets/audio/click.ogg", 0.05f);
 		toggleFullscreen();
 		break;
 	case GLUT_KEY_F2:
 		// Toggle view mode
-		sound::playSFX("assets/click.ogg", 0.05f);
+		sound::playSFX("assets/audio/click.ogg", 0.05f);
 		cams.toggleFPV_ESV();
 		if (cams.controlCam == &cams.cameraFree) {
 			cams.controlCam = cams.renderCam;
@@ -638,10 +638,10 @@ void Game::endRound(bool success) {
 	
 	// BONUS: Play different sound effects for win/lose
 	if (success) {
-		sound::playSFX("assets/win.ogg",1.0f);
+		sound::playSFX("assets/audio/win.ogg",1.0f);
 	}
 	else {
-		sound::playSFX("assets/lose.ogg",0.90f);
+		sound::playSFX("assets/audio/lose.ogg",0.90f);
 	}
 	gameState = GameState::RoundOver;
 	missionSuccess = success;
@@ -698,7 +698,7 @@ void Game::fireBulletFromCamera(const Camera& cam) {
 	++shotsFired;
 	bulletsFire(bullets, start, forward, speed, 0.6f, 5.0f);
 	// BONUS: Play sound effect on firing
-	sound::playSFX("assets/shoot.ogg", 1.0f);
+	sound::playSFX("assets/audio/shoot.ogg", 1.0f);
 
 }
 

@@ -151,8 +151,8 @@ int bulletsUpdate(std::vector<Bullet>& pool,
 				// Spawn particle impact effect
 				if (impacts) effectsSpawnImpact(*impacts, b.pos());
 
-				sound::playSFX("assets/hit.ogg", 1.0f);
-				sound::playSFX("assets/death.ogg", 0.25f);
+				sound::playSFX("assets/audio/hit.ogg", 1.0f);
+				sound::playSFX("assets/audio/death.ogg", 0.25f);
 
 				b.deactivate();
 				b.markScored();
