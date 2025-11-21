@@ -116,7 +116,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>./lib;$(ProjectDir)\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>freeglut.lib;OpenGl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freeglut.lib;OpenGl32.lib;assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -133,7 +133,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>./lib;$(ProjectDir)\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>freeglut.lib;OpenGl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freeglut.lib;OpenGl32.lib;assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -148,6 +148,7 @@
     <ClInclude Include="include\render_util.hpp" />
     <ClInclude Include="include\robots.hpp" />
     <ClInclude Include="include\sound.hpp" />
+    <ClInclude Include="include\texture.h" />
     <ClInclude Include="include\utilities.hpp" />
     <ClInclude Include="lib\freeglut.lib" />
   </ItemGroup>
@@ -160,8 +161,10 @@
     <ClCompile Include="src\render_util.cpp" />
     <ClCompile Include="src\robots.cpp" />
     <ClCompile Include="src\sound.cpp" />
+    <ClCompile Include="src\texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Library Include="lib\assimp-vc143-mt.lib" />
     <Library Include="lib\irrKlang.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
