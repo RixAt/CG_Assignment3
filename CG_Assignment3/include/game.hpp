@@ -41,7 +41,8 @@ struct ImpactFX;
 //   ShowIntro - Intro/menu screen
 //   Playing - Active gameplay
 //   RoundOver - Round has ended, show results
-enum class GameState { ShowIntro, Playing, RoundOver };
+//   Menu - Paused/menu state
+enum class GameState { ShowIntro, Playing, RoundOver, Menu };
 
 // Enum Class: BulletSpeed, speed modes for bullets
 //   Slow - Slow speed
@@ -133,6 +134,10 @@ public:
 	//void onRobotKilled();
 	void onBulletMiss();
 
+	// Menu handling
+	void openMenu();
+	void activateMenuSelection();
+
 	bool isDebugMode() const { return m_debugMode; }
 	void toggleDebugMode();
 
@@ -150,6 +155,8 @@ private:
 	void drawMainViewport(const Viewport& vp) const;
 	void drawInsetViewport(const Viewport& vp) const;
 	void drawHUDViewport(const Viewport& vp) const;
+
+	void drawMenu(int winW, int winH) const;
 
 	// Updates the ESV camera based on arcball parameters
 	void updateArcballCamera();
@@ -206,7 +213,7 @@ private:
 	bool missionSuccess = false;
 
 	// Current game state
-	GameState gameState{ GameState::ShowIntro };
+	GameState gameState{ GameState::Menu };
 
 	// Whether to show instructions on HUD
 	bool showInstructions = true;
@@ -252,6 +259,10 @@ private:
 
 	// Returns true if the round is over
 	bool isRoundOver() const { return gameState == GameState::RoundOver; };
+
+	int menuIndex = 1; // Current menu selection index
+	mutable int cachedWinW = 640; // Cached window width for menu rendering
+	mutable int cachedWinH = 480; // Cached window height for menu rendering
 
 	// Debugging stats
 	bool m_debugMode = false;

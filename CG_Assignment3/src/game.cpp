@@ -85,6 +85,8 @@ void Game::update(float dt) {
 	// Early out if showing intro or round over
 	if (gameState == GameState::ShowIntro) return;
 	if (gameState == GameState::RoundOver) return;
+	if (gameState == GameState::Menu) return;
+
 
 	if (m_debugMode) return;
 	// Update robots if motion enabled
@@ -134,6 +136,9 @@ void Game::update(float dt) {
 // Sets up viewports and calls sub-draw methods
 // Note: Depth test is managed per-viewport
 void Game::draw(int winW, int winH) const {
+	cachedWinW = winW;
+	cachedWinH = winH;
+
 	glDisable(GL_SCISSOR_TEST);
 	glViewport(0, 0, winW, winH);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -144,6 +149,10 @@ void Game::draw(int winW, int winH) const {
 	drawMainViewport(viewports.vpMain);
 	drawInsetViewport(viewports.vpInset);
 	drawHUDViewport(viewports.vpHUD);
+
+	if (gameState == GameState::Menu) {
+		drawMenu(winW, winH);
+	}
 
 	const float aspect = (winH > 0) ? (float)winW / (float)winH : 1.0f;
 
@@ -418,6 +427,78 @@ void Game::drawHUDViewport(const Viewport& vp) const {
 	glEnable(GL_DEPTH_TEST);
 }
 
+void Game::drawMenu(int winW, int winH) const{
+	if (gameState == GameState::Menu) {
+
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_LIGHTING);
+		glDisable(GL_TEXTURE_2D);
+
+		glDisable(GL_SCISSOR_TEST);
+		glViewport(0, 0, winW, winH);
+		glScissor(0, 0, winW, winH);
+
+		// --- Set up fullscreen 2D (orthographic) projection ---
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glLoadIdentity();
+		glOrtho(0, winW, 0, winH, -1, 1);
+
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
+		glLoadIdentity();
+
+		// --- Dim the entire screen ---
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		glColor4f(0.f, 0.f, 0.f, 0.7f);
+		glBegin(GL_QUADS);
+		glVertex2f(0, 0);
+		glVertex2f(winW, 0);
+		glVertex2f(winW, winH);
+		glVertex2f(0, winH);
+		glEnd();
+
+		glDisable(GL_BLEND);
+
+		// --- Menu text ---
+		int cx = winW / 2;
+		int cy = winH / 2 + 50;
+		int gap = 40;
+
+		const char* items[3] = { "NEW GAME", "RESUME", "EXIT" };
+
+		// Title
+		glColor3f(1, 1, 1);
+		DrawText2D(cx - 50, cy + gap, "PAUSED", GLUT_BITMAP_HELVETICA_18);
+
+		for (int i = 0; i < 3; i++) {
+			int ty = cy - i * gap;
+
+			if (i == menuIndex)
+				glColor3f(1.0f, 1.0f, 0.2f);    // highlight
+			else
+				glColor3f(1.0f, 1.0f, 1.0f);
+
+			if (i == menuIndex)
+				DrawText2D(cx - 120, ty, ">");
+
+			DrawText2D(cx - 80, ty, items[i]);
+		}
+
+		// --- Restore matrices ---
+		glMatrixMode(GL_MODELVIEW);
+		glPopMatrix();
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
+
+		glEnable(GL_SCISSOR_TEST);
+		glEnable(GL_DEPTH_TEST);
+	}
+
+}
+
 // handleKey(): Handle standard key input
 // Handles game state keys (reset, instructions) and in-game controls
 void Game::handleKey(unsigned char key) {
@@ -441,12 +522,30 @@ void Game::handleKey(unsigned char key) {
 		if (key == 27) exit(0);
 		return;
 	}
+
+	if (gameState == GameState::Menu) {
+		if (key == 13 || key == '\r') {
+			sound::playSFX("assets/audio/click.ogg", 0.02f);
+			activateMenuSelection();
+		}
+		glutPostRedisplay();
+		return;
+	}
 	
 	
 	switch (key) {
 	case 27: // ESC key
 		sound::playSFX("assets/audio/click.ogg", 0.05f);
-		exit(0);
+		if (gameState == GameState::Playing) {
+			openMenu();
+		}
+		else if (gameState == GameState::Menu) {
+			gameState = GameState::Playing;
+		}
+		else {
+			openMenu();
+		}
+		glutPostRedisplay();
 		break;
 	case 'w':
 	case 'W':
@@ -574,6 +673,23 @@ void Game::handleSpecialKey(int key) {
 	// Early out if round over or showing intro
 	if (gameState == GameState::RoundOver || gameState == GameState::ShowIntro) {
 		return;
+	}
+
+	if (gameState == GameState::Menu) {
+		switch (key) {
+		case GLUT_KEY_UP:
+			menuIndex = (menuIndex + 2) % 3;
+			sound::playSFX("assets/audio/click.ogg", 0.02f);
+			glutPostRedisplay();
+			return;
+		case GLUT_KEY_DOWN:
+			menuIndex = (menuIndex + 1) % 3;
+			sound::playSFX("assets/audio/click.ogg", 0.02f);
+			glutPostRedisplay();
+			return;
+		default:
+			return;
+		}
 	}
 
 	switch (key) {
@@ -750,8 +866,31 @@ void Game::updateArcballCamera() {
 // Left-drag to rotate, right-drag to zoom
 void Game::handleMouseButton(int button, int state, int x, int y) {
 	if (gameState == GameState::RoundOver) return;
-	if (!isESVMainActive()) return;
+	
 
+	if (gameState == GameState::Menu) {
+		if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+			int cx = cachedWinH / 2;
+			int cy = cachedWinH / 2;
+			int gap = 40;
+
+			int winY = cachedWinH - y;
+
+			for (int i = 0; i < 3; ++i) {
+				int itemY = cy - i * gap;
+
+				if (x > cx - 150 && x < cx + 150 && winY > itemY - 15 && winY < itemY + 15) {
+					menuIndex = i;
+					sound::playSFX("assets/audio/click.ogg", 0.02f);
+					activateMenuSelection();
+					glutPostRedisplay();
+					return;
+				}
+			}
+		}
+		return;
+	}
+	if (!isESVMainActive()) return;
 	if (button == GLUT_LEFT_BUTTON) {
 		arcball.rotating = (state == GLUT_DOWN);
 		arcball.lastX = x;
@@ -797,6 +936,30 @@ void Game::handleMouseMotion(int x, int y) {
 		if (newR > arcball.maxR) newR = arcball.maxR;
 		cam.setOrbitRadius(newR);
 		updateArcballCamera();
+	}
+}
+
+// openMenu(): Open the game menu
+void Game::openMenu() {
+	gameState = GameState::Menu;
+	showInstructions = false;
+	menuIndex = 1;
+	glutPostRedisplay();
+}
+
+// activateMenuSelection(): Activate the currently selected menu item
+void Game::activateMenuSelection() {
+	switch (menuIndex) {
+	case 0: // New Game
+		resetRound();
+		gameState = GameState::Playing;
+		break;
+	case 1: // Resume
+		gameState = GameState::Playing;
+		break;
+	case 2: // Exit
+		exit(0);
+		break;
 	}
 }
 
