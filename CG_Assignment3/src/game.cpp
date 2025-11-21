@@ -20,6 +20,7 @@
 #include "game.hpp"
 #include <cmath>
 #include <cstdlib>
+#include <iostream>
 #include <ctime>
 #include "sound.hpp"
 
@@ -42,6 +43,20 @@ Game::Game()
 void Game::init() {
 	srand(time(nullptr));
 	robots.clear();
+
+	const GLubyte* vendor = glGetString(GL_VENDOR);
+	const GLubyte* renderer = glGetString(GL_RENDERER);
+	const GLubyte* version = glGetString(GL_VERSION);
+	//const GLubyte* glsl = glGetString();
+
+	if (vendor)   m_glVendor = reinterpret_cast<const char*>(vendor);
+	if (renderer) m_glRenderer = reinterpret_cast<const char*>(renderer);
+	if (version)  m_glVersion = reinterpret_cast<const char*>(version);
+	//if (glsl)     m_glShadingLanguage = reinterpret_cast<const char*>(glsl);
+
+	// Initialize fps timer
+	m_debugFrameCount = 0;
+	m_debugLastFpsTimeMs = glutGet(GLUT_ELAPSED_TIME);
 
 	// Spawns ten robots at random XY positions on ground plane
 	for (int i = 0; i < 10; ++i) {
@@ -70,6 +85,8 @@ void Game::update(float dt) {
 	// Early out if showing intro or round over
 	if (gameState == GameState::ShowIntro) return;
 	if (gameState == GameState::RoundOver) return;
+
+	if (m_debugMode) return;
 	// Update robots if motion enabled
 	if (motionEnabled) {
 		for (auto& r : robots) {
@@ -575,6 +592,12 @@ void Game::handleSpecialKey(int key) {
 		
 		glutPostRedisplay();
 		break;
+	case GLUT_KEY_F6:
+		// Debug mode:
+		toggleDebugMode();
+		glutPostRedisplay();
+
+		break;
 	case GLUT_KEY_UP:
 		// Move camera forward
 		cams.controlCam->moveForward(cams.controlCam->moveSpeed);
@@ -775,4 +798,9 @@ void Game::handleMouseMotion(int x, int y) {
 		cam.setOrbitRadius(newR);
 		updateArcballCamera();
 	}
+}
+
+void Game::toggleDebugMode() {
+	m_debugMode = !m_debugMode;
+	std::cout << "[Debug] Debug mode " << (m_debugMode ? "ON" : "OFF") << std::endl;
 }

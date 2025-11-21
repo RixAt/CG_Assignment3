@@ -133,6 +133,9 @@ public:
 	//void onRobotKilled();
 	void onBulletMiss();
 
+	bool isDebugMode() const { return m_debugMode; }
+	void toggleDebugMode();
+
 private:
 	// Draws the world objects (robots, bullets, effects)
 	void drawWorld() const;
@@ -249,6 +252,23 @@ private:
 
 	// Returns true if the round is over
 	bool isRoundOver() const { return gameState == GameState::RoundOver; };
+
+	// Debugging stats
+	bool m_debugMode = false;
+
+	// FPS tracking
+	mutable int   m_debugFrameCount = 0;
+	mutable int   m_debugLastFpsTimeMs = 0;
+	mutable float m_debugFps = 0.0f;
+
+	// GL info
+	std::string m_glVendor;
+	std::string m_glRenderer;
+	std::string m_glVersion;
+	std::string m_glShadingLanguage;
+
+	// Optional: process memory usage (MB)
+	mutable float m_debugMemoryMB = 0.0f;
 };
 
 
