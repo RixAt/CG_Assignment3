@@ -29,6 +29,10 @@
 #include "camera.hpp"
 #include "bullet.hpp"
 #include "effects.hpp"
+#include "menu_manager.hpp"
+#include "pause_menu.hpp"
+#include "intro_menu.hpp"
+#include "roundover_menu.hpp"
 
 // Forward declarations
 struct Vector3;
@@ -156,7 +160,7 @@ private:
 	void drawInsetViewport(const Viewport& vp) const;
 	void drawHUDViewport(const Viewport& vp) const;
 
-	void drawMenu(int winW, int winH) const;
+	void drawActiveMenu(int winW, int winH) const;
 
 	// Updates the ESV camera based on arcball parameters
 	void updateArcballCamera();
@@ -213,7 +217,7 @@ private:
 	bool missionSuccess = false;
 
 	// Current game state
-	GameState gameState{ GameState::Menu };
+	GameState gameState{ GameState::ShowIntro };
 
 	// Whether to show instructions on HUD
 	bool showInstructions = true;
@@ -260,7 +264,8 @@ private:
 	// Returns true if the round is over
 	bool isRoundOver() const { return gameState == GameState::RoundOver; };
 
-	int menuIndex = 1; // Current menu selection index
+	// Being replaced by MenuManager
+	//int menuIndex = 1; // Current menu selection index
 	mutable int cachedWinW = 640; // Cached window width for menu rendering
 	mutable int cachedWinH = 480; // Cached window height for menu rendering
 
@@ -280,6 +285,11 @@ private:
 
 	// Optional: process memory usage (MB)
 	mutable float m_debugMemoryMB = 0.0f;
+
+	MenuManager g_menus;
+	PauseMenu g_pauseMenu;
+	IntroMenu g_introMenu;
+	RoundOverMenu g_roundOverMenu;
 };
 
 

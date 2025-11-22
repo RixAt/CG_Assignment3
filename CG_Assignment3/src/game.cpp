@@ -58,6 +58,30 @@ void Game::init() {
 	m_debugFrameCount = 0;
 	m_debugLastFpsTimeMs = glutGet(GLUT_ELAPSED_TIME);
 
+	g_introMenu.setLines({
+	"W wireframe | S solid | V vertices | C colliders",
+	"B bullet speed | M motion | F1 fullscreen | F2 FPV/ESV",
+	"A axes | Arrows move/turn | Space fire",
+	"ESC menu | I instructions/pause"
+		});
+
+	g_introMenu.setAction(0, [this]() {
+		g_menus.clear();
+		gameState = GameState::Playing;
+		});
+
+	g_menus.setActive(&g_introMenu, 640, 480);
+
+	// Pause menu actions
+	g_pauseMenu.setAction(0, [this]() { resetRound(); gameState = GameState::Playing; g_menus.clear(); });
+	g_pauseMenu.setAction(1, [this]() { gameState = GameState::Playing; g_menus.clear(); });
+	g_pauseMenu.setAction(2, []() { exit(0); });
+
+	// RoundOver menu actions
+	g_roundOverMenu.setAction(0, [this]() { resetRound(); gameState = GameState::Playing; g_menus.clear(); });
+	g_roundOverMenu.setAction(1, [this]() { gameState = GameState::Playing; g_menus.clear(); });
+	g_roundOverMenu.setAction(2, []() { exit(0); });
+
 	// Spawns ten robots at random XY positions on ground plane
 	for (int i = 0; i < 10; ++i) {
 		float x = (std::rand() % 200 - 100);
@@ -150,8 +174,8 @@ void Game::draw(int winW, int winH) const {
 	drawInsetViewport(viewports.vpInset);
 	drawHUDViewport(viewports.vpHUD);
 
-	if (gameState == GameState::Menu) {
-		drawMenu(winW, winH);
+	if (g_menus.hasActive()) {
+		drawActiveMenu(winW, winH);
 	}
 
 	const float aspect = (winH > 0) ? (float)winW / (float)winH : 1.0f;
@@ -427,110 +451,89 @@ void Game::drawHUDViewport(const Viewport& vp) const {
 	glEnable(GL_DEPTH_TEST);
 }
 
-void Game::drawMenu(int winW, int winH) const{
-	if (gameState == GameState::Menu) {
+void Game::drawActiveMenu(int winW, int winH) const {
+	if (!g_menus.hasActive()) return;
 
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_LIGHTING);
-		glDisable(GL_TEXTURE_2D);
+	// escape HUD clipping
+	glDisable(GL_SCISSOR_TEST);
+	glViewport(0, 0, winW, winH);
 
-		glDisable(GL_SCISSOR_TEST);
-		glViewport(0, 0, winW, winH);
-		glScissor(0, 0, winW, winH);
+	// fullscreen ortho
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	glOrtho(0, winW, 0, winH, -1, 1);
 
-		// --- Set up fullscreen 2D (orthographic) projection ---
-		glMatrixMode(GL_PROJECTION);
-		glPushMatrix();
-		glLoadIdentity();
-		glOrtho(0, winW, 0, winH, -1, 1);
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
 
-		glMatrixMode(GL_MODELVIEW);
-		glPushMatrix();
-		glLoadIdentity();
+	// keep layout synced (handles resize)
+	const_cast<MenuManager&>(g_menus).layout(winW, winH);
+	g_menus.draw(winW, winH);
 
-		// --- Dim the entire screen ---
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
 
-		glColor4f(0.f, 0.f, 0.f, 0.7f);
-		glBegin(GL_QUADS);
-		glVertex2f(0, 0);
-		glVertex2f(winW, 0);
-		glVertex2f(winW, winH);
-		glVertex2f(0, winH);
-		glEnd();
-
-		glDisable(GL_BLEND);
-
-		// --- Menu text ---
-		int cx = winW / 2;
-		int cy = winH / 2 + 50;
-		int gap = 40;
-
-		const char* items[3] = { "NEW GAME", "RESUME", "EXIT" };
-
-		// Title
-		glColor3f(1, 1, 1);
-		DrawText2D(cx - 50, cy + gap, "PAUSED", GLUT_BITMAP_HELVETICA_18);
-
-		for (int i = 0; i < 3; i++) {
-			int ty = cy - i * gap;
-
-			if (i == menuIndex)
-				glColor3f(1.0f, 1.0f, 0.2f);    // highlight
-			else
-				glColor3f(1.0f, 1.0f, 1.0f);
-
-			if (i == menuIndex)
-				DrawText2D(cx - 120, ty, ">");
-
-			DrawText2D(cx - 80, ty, items[i]);
-		}
-
-		// --- Restore matrices ---
-		glMatrixMode(GL_MODELVIEW);
-		glPopMatrix();
-		glMatrixMode(GL_PROJECTION);
-		glPopMatrix();
-
-		glEnable(GL_SCISSOR_TEST);
-		glEnable(GL_DEPTH_TEST);
-	}
-
+	glEnable(GL_SCISSOR_TEST);
+	glEnable(GL_DEPTH_TEST);
 }
+
 
 // handleKey(): Handle standard key input
 // Handles game state keys (reset, instructions) and in-game controls
 void Game::handleKey(unsigned char key) {
-	if (gameState == GameState::RoundOver || gameState == GameState::ShowIntro) {
-		// While paused or round over, only allow reset, instructions toggle, and quit
-		if (key == 'r' || key == 'R') {
-			sound::playSFX("assets/audio/click.ogg", 0.02f);
-			resetRound();
-			glutPostRedisplay();
-			return;
-		} 
-		if (key == 'i' || key == 'I') {
-			sound::playSFX("assets/audio/click.ogg", 0.02f);
-			showInstructions = !showInstructions;
-			if (!showInstructions && gameState == GameState::ShowIntro) {
-				gameState = GameState::Playing;
-			}
-			glutPostRedisplay();
-			return;
-		}
-		if (key == 27) exit(0);
-		return;
-	}
-
-	if (gameState == GameState::Menu) {
+	if (g_menus.hasActive()) {
 		if (key == 13 || key == '\r') {
 			sound::playSFX("assets/audio/click.ogg", 0.02f);
-			activateMenuSelection();
+			g_menus.onEnter();
+			glutPostRedisplay();
+			return;
 		}
-		glutPostRedisplay();
-		return;
+		if (key == 27) { // ESC closes pause/intro, not roundover
+			if (gameState == GameState::Menu || gameState == GameState::ShowIntro) {
+				g_menus.clear();
+				gameState = GameState::Playing;
+				glutPostRedisplay();
+			}
+			return;
+		}
+
+		if (key == 'i' || key == 'I') {
+			g_menus.clear();
+			gameState = GameState::Playing;
+			glutPostRedisplay();
+			return;
+		}
+
+		return; // block gameplay keys
 	}
+
+	//if (gameState == GameState::RoundOver || gameState == GameState::ShowIntro) {
+	//	// While paused or round over, only allow reset, instructions toggle, and quit
+	//	if (key == 'r' || key == 'R') {
+	//		sound::playSFX("assets/audio/click.ogg", 0.02f);
+	//		resetRound();
+	//		glutPostRedisplay();
+	//		return;
+	//	} 
+	//	if (key == 'i' || key == 'I') {
+	//		sound::playSFX("assets/audio/click.ogg", 0.02f);
+	//		showInstructions = !showInstructions;
+	//		if (!showInstructions && gameState == GameState::ShowIntro) {
+	//			gameState = GameState::Playing;
+	//		}
+	//		glutPostRedisplay();
+	//		return;
+	//	}
+	//	if (key == 27) exit(0);
+	//	return;
+	//}
+
+	
+
 	
 	
 	switch (key) {
@@ -581,13 +584,23 @@ void Game::handleKey(unsigned char key) {
 	case 'I':
 		// Toggle instructions overlay and pause/resume game
 		sound::playSFX("assets/audio/click.ogg", 0.02f);
-		showInstructions = !showInstructions;
+		/*showInstructions = !showInstructions;
 		if (gameState == GameState::ShowIntro) {
 			gameState = GameState::Playing;
 		}
 		else {
 			gameState = GameState::ShowIntro;
+		}*/
+
+		if (g_menus.hasActive() && g_menus.getActive() == &g_introMenu) {
+			g_menus.clear();
+			gameState = GameState::Playing;
 		}
+		else {
+			gameState = GameState::ShowIntro;
+			g_menus.setActive(&g_introMenu, cachedWinW, cachedWinH);
+		}
+
 		glutPostRedisplay();
 		break;
 	case '3':
@@ -675,20 +688,20 @@ void Game::handleSpecialKey(int key) {
 		return;
 	}
 
-	if (gameState == GameState::Menu) {
+	if (g_menus.hasActive()) {
 		switch (key) {
 		case GLUT_KEY_UP:
-			menuIndex = (menuIndex + 2) % 3;
+			g_menus.onArrowUp();
 			sound::playSFX("assets/audio/click.ogg", 0.02f);
 			glutPostRedisplay();
 			return;
 		case GLUT_KEY_DOWN:
-			menuIndex = (menuIndex + 1) % 3;
+			g_menus.onArrowDown();
 			sound::playSFX("assets/audio/click.ogg", 0.02f);
 			glutPostRedisplay();
 			return;
 		default:
-			return;
+			return; // ignore other special keys while a menu is open
 		}
 	}
 
@@ -784,6 +797,14 @@ void Game::endRound(bool success) {
 	}
 	gameState = GameState::RoundOver;
 	missionSuccess = success;
+
+	g_roundOverMenu.setSuccess(success);
+	g_roundOverMenu.setStats(
+		"Score: " + std::to_string(score),
+		"Accuracy: " + std::to_string((int)std::round(accuracyPercentage())) + "%"
+	);
+
+	g_menus.setActive(&g_roundOverMenu, cachedWinW, cachedWinH);
 }
 
 // resetRound(): Reset game state for a new round
@@ -843,7 +864,8 @@ void Game::fireBulletFromCamera(const Camera& cam) {
 
 // resumeFromMenu(): Resume game from menu state
 void Game::resumeFromMenu() {
-	resetRound();
+	gameState = GameState::Playing;
+	g_menus.clear();
 	glutPostRedisplay();
 }
 
@@ -868,28 +890,16 @@ void Game::handleMouseButton(int button, int state, int x, int y) {
 	if (gameState == GameState::RoundOver) return;
 	
 
-	if (gameState == GameState::Menu) {
+	if (g_menus.hasActive()) {
 		if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-			int cx = cachedWinH / 2;
-			int cy = cachedWinH / 2;
-			int gap = 40;
-
-			int winY = cachedWinH - y;
-
-			for (int i = 0; i < 3; ++i) {
-				int itemY = cy - i * gap;
-
-				if (x > cx - 150 && x < cx + 150 && winY > itemY - 15 && winY < itemY + 15) {
-					menuIndex = i;
-					sound::playSFX("assets/audio/click.ogg", 0.02f);
-					activateMenuSelection();
-					glutPostRedisplay();
-					return;
-				}
-			}
+			bool activated = g_menus.onMouseClick(x, y, cachedWinH);
+			if (activated)
+				sound::playSFX("assets/audio/click.ogg", 0.05f);
+			glutPostRedisplay();
 		}
 		return;
 	}
+
 	if (!isESVMainActive()) return;
 	if (button == GLUT_LEFT_BUTTON) {
 		arcball.rotating = (state == GLUT_DOWN);
@@ -906,6 +916,13 @@ void Game::handleMouseButton(int button, int state, int x, int y) {
 // handleMouseMotion(): Handle mouse motion events for arcball control
 // Updates camera orbit angles or zoom based on mouse movement
 void Game::handleMouseMotion(int x, int y) {
+	if (g_menus.hasActive()) {
+		g_menus.onMouseMove(x, y, cachedWinH);
+		glutPostRedisplay();
+		return;
+	}
+
+	
 	if (!isESVMainActive()) return;
 
 	int dx = x - arcball.lastX;
@@ -943,25 +960,25 @@ void Game::handleMouseMotion(int x, int y) {
 void Game::openMenu() {
 	gameState = GameState::Menu;
 	showInstructions = false;
-	menuIndex = 1;
+	g_menus.setActive(&g_pauseMenu, cachedWinW, cachedWinH);
 	glutPostRedisplay();
 }
 
-// activateMenuSelection(): Activate the currently selected menu item
-void Game::activateMenuSelection() {
-	switch (menuIndex) {
-	case 0: // New Game
-		resetRound();
-		gameState = GameState::Playing;
-		break;
-	case 1: // Resume
-		gameState = GameState::Playing;
-		break;
-	case 2: // Exit
-		exit(0);
-		break;
-	}
-}
+//// activateMenuSelection(): Activate the currently selected menu item
+//void Game::activateMenuSelection() {
+//	switch (menuIndex) {
+//	case 0: // New Game
+//		resetRound();
+//		gameState = GameState::Playing;
+//		break;
+//	case 1: // Resume
+//		gameState = GameState::Playing;
+//		break;
+//	case 2: // Exit
+//		exit(0);
+//		break;
+//	}
+//}
 
 void Game::toggleDebugMode() {
 	m_debugMode = !m_debugMode;

@@ -41,16 +41,24 @@ public:
 	virtual ~Menu() = default;
 
 	void setItems(const std::vector<std::string>& items) {
-
+		m_items = std::move(items);
+		m_itemRects.resize(m_items.size());
+		m_actions.resize(m_items.size());
+		if (m_selected >= (int)m_items.size()) m_selected = (int)m_items.size() - 1;
+		if (m_selected < 0) m_selected = 0;
 	};
 
 	void setAction(int index, std::function<void()> fn) {
-
+		if (index >= 0 && index < static_cast<int>(m_actions.size())) {
+			m_actions[index] = std::move(fn);
+		}
 	};
 
 	void setSelectedIndex(int index) {
-
-
+		if (m_items.empty()) { m_selected = 0; return; }
+		if (index < 0) index = 0;
+		if (index >= (int)m_items.size()) index = (int)m_items.size() - 1;
+		m_selected = index;
 	};
 
 	int selectedIndex() const { return m_selected; }
@@ -107,6 +115,7 @@ public:
 	}
 protected:
 	virtual const char* titleText() const { return "Menu"; }
+	virtual const char* hintText()  const { return "Up/Down + Enter or click option. ESC to close."; }
 	virtual void drawBackground(int winW, int winH) const;
 	virtual void drawTitle() const;
 	virtual void drawItems() const;

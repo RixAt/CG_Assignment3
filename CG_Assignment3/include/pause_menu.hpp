@@ -21,10 +21,12 @@
 
 class PauseMenu : public Menu {
 public:
-	PauseMenu();
+	PauseMenu() {
+		setItems({ "NEW GAME", "RESUME", "EXIT" });
+		setSelectedIndex(1); // default highlight Resume
+	};
 
 protected:
-	virtual const char* titleText() const override { return "Paused"; }
-	onst char* hintText()  const override { return "Up/Down + Enter or click option. ESC to resume."; }
-};
+	const char* titleText() const override { return "Paused"; }
+	const char* hintText()  const override { return "Up/Down + Enter or click option. ESC to resume."; }
 };

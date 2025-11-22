@@ -144,12 +144,14 @@
     <ClInclude Include="include\gameobject.hpp" />
     <ClInclude Include="include\GL\freeglut_std.h" />
     <ClInclude Include="include\GL\glut.h" />
+    <ClInclude Include="include\intro_menu.hpp" />
     <ClInclude Include="include\IrrKlang\irrKlang.h" />
     <ClInclude Include="include\menu.hpp" />
     <ClInclude Include="include\menu_manager.hpp" />
     <ClInclude Include="include\pause_menu.hpp" />
     <ClInclude Include="include\render_util.hpp" />
     <ClInclude Include="include\robots.hpp" />
+    <ClInclude Include="include\roundover_menu.hpp" />
     <ClInclude Include="include\sound.hpp" />
     <ClInclude Include="include\texture.h" />
     <ClInclude Include="include\utilities.hpp" />
@@ -160,11 +162,13 @@
     <ClCompile Include="src\camera.cpp" />
     <ClCompile Include="src\effects.cpp" />
     <ClCompile Include="src\game.cpp" />
+    <ClCompile Include="src\intro_menu.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\menu.cpp" />
     <ClCompile Include="src\pause_menu.cpp" />
     <ClCompile Include="src\render_util.cpp" />
     <ClCompile Include="src\robots.cpp" />
+    <ClCompile Include="src\roundover_menu.cpp" />
     <ClCompile Include="src\sound.cpp" />
     <ClCompile Include="src\texture.cpp" />
   </ItemGroup>
