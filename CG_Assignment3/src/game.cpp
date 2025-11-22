@@ -691,6 +691,7 @@ void Game::handleSpecialKey(int key) {
 		return;
 	}*/
 
+	// While a menu is open, only handle menu navigation keys and fullscreen toggle
 	if (g_menus.hasActive()) {
 		switch (key) {
 		case GLUT_KEY_UP:
@@ -703,6 +704,11 @@ void Game::handleSpecialKey(int key) {
 			sound::playSFX("assets/audio/click.ogg", 0.02f);
 			glutPostRedisplay();
 			return;
+		case GLUT_KEY_F1:
+			// Toggle fullscreen
+			sound::playSFX("assets/audio/click.ogg", 0.05f);
+			toggleFullscreen();
+			break;
 		default:
 			return; // ignore other special keys while a menu is open
 		}
