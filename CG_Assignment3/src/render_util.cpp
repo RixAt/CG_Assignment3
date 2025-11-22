@@ -318,3 +318,16 @@ void DrawText2D(float x, float y, const char* text, void* font) {
 		glutBitmapCharacter(font, *c);
 	}
 }
+
+int GetTextWidth(const char* text, void* font) {
+	int width = 0;
+	for (const char* c = text; *c != '\0'; ++c) {
+		width += glutBitmapWidth(font, *c);
+	}
+	return width;
+}
+
+void DrawTextCentered(float cx, float y, const char* text, void* font) {
+	int half = GetTextWidth(text, font) / 2;
+	DrawText2D(cx - static_cast<float>(half), y, text, font);
+}

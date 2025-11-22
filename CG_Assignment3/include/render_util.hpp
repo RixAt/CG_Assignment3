@@ -67,4 +67,8 @@ void DrawViewportBorder(const Viewport& vp, const Vector3& color, float thicknes
 // Draw 2D text on the screen at specified coordinates
 void DrawText2D(float x, float y, const char* text, void* font = GLUT_BITMAP_HELVETICA_12);
 
+int GetTextWidth(const char* text, void* font = GLUT_BITMAP_HELVETICA_12);
+
+void DrawTextCentered(float cx, float y, const char* text, void* font = GLUT_BITMAP_HELVETICA_12);
+
 #endif //RENDER_UTIL_HPP
