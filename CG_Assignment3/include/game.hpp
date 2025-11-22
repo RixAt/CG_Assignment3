@@ -220,7 +220,7 @@ private:
 	GameState gameState{ GameState::ShowIntro };
 
 	// Whether to show instructions on HUD
-	bool showInstructions = true;
+	bool showInstructions = false; //Old implementation, now set to false
 
 	// Current bullet speed mode
 	BulletSpeed bulletSpeedMode = BulletSpeed::Slow;

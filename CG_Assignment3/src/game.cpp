@@ -59,6 +59,7 @@ void Game::init() {
 	m_debugLastFpsTimeMs = glutGet(GLUT_ELAPSED_TIME);
 
 	g_introMenu.setLines({
+	"Controls:",
 	"W wireframe | S solid | V vertices | C colliders",
 	"B bullet speed | M motion | F1 fullscreen | F2 FPV/ESV",
 	"A axes | Arrows move/turn | Space fire",
@@ -502,9 +503,11 @@ void Game::handleKey(unsigned char key) {
 		}
 
 		if (key == 'i' || key == 'I') {
-			g_menus.clear();
-			gameState = GameState::Playing;
-			glutPostRedisplay();
+			if (gameState == GameState::ShowIntro || gameState == GameState::Menu) {
+				g_menus.clear();
+				gameState = GameState::Playing;
+				glutPostRedisplay();
+			}
 			return;
 		}
 
@@ -591,14 +594,14 @@ void Game::handleKey(unsigned char key) {
 		else {
 			gameState = GameState::ShowIntro;
 		}*/
-
+		//showInstructions = !showInstructions;
 		if (g_menus.hasActive() && g_menus.getActive() == &g_introMenu) {
 			g_menus.clear();
 			gameState = GameState::Playing;
 		}
 		else {
-			gameState = GameState::ShowIntro;
-			g_menus.setActive(&g_introMenu, cachedWinW, cachedWinH);
+			gameState = GameState::Menu;
+			g_menus.setActive(&g_pauseMenu, cachedWinW, cachedWinH);
 		}
 
 		glutPostRedisplay();
@@ -683,10 +686,10 @@ void Game::handleKey(unsigned char key) {
 // F2: toggle FPV/ESV view
 // Arrow keys: move/turn camera
 void Game::handleSpecialKey(int key) {
-	// Early out if round over or showing intro
-	if (gameState == GameState::RoundOver || gameState == GameState::ShowIntro) {
+	// Early out if round over or showing intro (old)
+	/*if (gameState == GameState::RoundOver || gameState == GameState::ShowIntro) {
 		return;
-	}
+	}*/
 
 	if (g_menus.hasActive()) {
 		switch (key) {
@@ -887,7 +890,7 @@ void Game::updateArcballCamera() {
 // handleMouseButton(): Handle mouse button events for arcball control
 // Left-drag to rotate, right-drag to zoom
 void Game::handleMouseButton(int button, int state, int x, int y) {
-	if (gameState == GameState::RoundOver) return;
+	//if (gameState == GameState::RoundOver) return;
 	
 
 	if (g_menus.hasActive()) {

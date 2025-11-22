@@ -40,7 +40,7 @@ void Menu::drawBackground(int winW, int winH) const {
 
 void Menu::drawTitle() const {
     glColor3f(1, 1, 1);
-    DrawText2D(m_cx - 50, m_cy + m_gap, titleText(), GLUT_BITMAP_HELVETICA_18);
+    DrawTextCentered(m_cx, m_cy + m_gap, titleText(), GLUT_BITMAP_HELVETICA_18);
 }
 
 void Menu::drawItems() const {
@@ -49,12 +49,12 @@ void Menu::drawItems() const {
 
         if (i == m_selected) {
             glColor3f(1.0f, 1.0f, 0.2f);
-            DrawText2D(m_cx - 120, y, ">", GLUT_BITMAP_HELVETICA_18);
+            DrawText2D(m_cx - 80, y, ">", GLUT_BITMAP_HELVETICA_18);
         }
         else {
             glColor3f(1.0f, 1.0f, 1.0f);
         }
-        DrawText2D(m_cx - 80, y, m_items[i].c_str(), GLUT_BITMAP_HELVETICA_18);
+        DrawTextCentered(m_cx, y, m_items[i].c_str(), GLUT_BITMAP_HELVETICA_18);
     }
 }
 

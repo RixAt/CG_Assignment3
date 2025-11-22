@@ -113,6 +113,16 @@ public:
 		}
 		return false;
 	}
+
+	virtual void onMouseMove(int mx, int myTopLeft, int winH) {
+		int my = winH - myTopLeft;
+		for (int i = 0; i < (int)m_itemRects.size(); i++) {
+			if (m_itemRects[i].contains(mx, my)) {
+				m_selected = i;
+				return;
+			}
+		}
+	}
 protected:
 	virtual const char* titleText() const { return "Menu"; }
 	virtual const char* hintText()  const { return "Up/Down + Enter or click option. ESC to close."; }

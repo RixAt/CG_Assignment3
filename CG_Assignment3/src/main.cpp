@@ -174,6 +174,7 @@ int main(int argc, char** argv) {
 	glutSpecialFunc(SpecialInput);		// Call the special keyboard function
 	glutMouseFunc(MouseButton);			// Call the mouse button function
 	glutMotionFunc(MouseMotion);        // Call the mouse motion function
+	glutPassiveMotionFunc(MouseMotion); // Call the mouse motion function
 
 	int menu = glutCreateMenu(OnPopupMenu);
 	glutAddMenuEntry("Resume", MENU_RESUME);

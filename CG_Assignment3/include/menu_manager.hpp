@@ -60,7 +60,7 @@ public:
 	};
 
 	void onMouseMove(int x, int y, int winH) {
-		if (active) active->onMouseClick(x, y, winH);
+		if (active) active->onMouseMove(x, y, winH);
 	};
 
 

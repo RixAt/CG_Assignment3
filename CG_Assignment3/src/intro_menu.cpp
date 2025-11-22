@@ -27,11 +27,11 @@ void IntroMenu::draw(int winW, int winH) const {
     drawBackground(winW, winH);
 
     glColor3f(1, 1, 1);
-    DrawText2D(m_cx - 90, m_cy + 100, titleText(), GLUT_BITMAP_HELVETICA_18);
+    DrawTextCentered(m_cx, m_cy + 100, titleText(), GLUT_BITMAP_HELVETICA_18);
 
-    int y = m_cy + 55;
+    int y = m_cy - 155;
     for (auto& s : m_lines) {
-        DrawText2D(m_cx - 240, y, s.c_str(), GLUT_BITMAP_HELVETICA_12);
+        DrawTextCentered(m_cx, y, s.c_str(), GLUT_BITMAP_HELVETICA_12);
         y -= 18;
     }
 
