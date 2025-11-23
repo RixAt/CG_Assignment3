@@ -43,8 +43,13 @@ bool Texture::loadFromFile(const std::string& path, bool generateMipmaps) {
 	unsigned char* data = stbi_load(path.c_str(), &width, &height, &channels, 0);
 
 	if (!data) {
-		std::cerr << "Failed to load texture: " << path
-			<< std::endl << stbi_failure_reason() << std::endl;
+		std::cerr << "[Texture] Failed to load texture: " << path
+			<< std::endl << "Reason: " << stbi_failure_reason()
+			<< std::endl << "Loading default instead." << std::endl;\
+
+		if (path != "assets/textures/default_texture.png") {
+			return loadFromFile("assets/textures/default_texture.png", false);
+		}
 		return false;
 	}
 
