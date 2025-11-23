@@ -39,6 +39,8 @@ Texture::~Texture() {
 bool Texture::loadFromFile(const std::string& path, bool generateMipmaps) {
 	int width, height, channels;
 
+	LOG_INFO("Loading texture: " + path);
+
 	stbi_set_flip_vertically_on_load(true);
 
 	unsigned char* data = stbi_load(path.c_str(), &width, &height, &channels, 0);
@@ -47,10 +49,10 @@ bool Texture::loadFromFile(const std::string& path, bool generateMipmaps) {
 		LOGE("Texture load FAILED: " << path
 			<< " | Reason: " << stbi_failure_reason());
 
-
-		if (path != "assets/textures/default_texture.png") {
+		// Handled by TextureManager now
+		/*if (path != "assets/textures/default_texture.png") {
 			return loadFromFile("assets/textures/default_texture.png", false);
-		}
+		}*/
 		return false;
 	}
 
@@ -86,7 +88,7 @@ bool Texture::loadFromFile(const std::string& path, bool generateMipmaps) {
 
 	stbi_image_free(data);
 
-	LOGI("Loaded texture: " << path
+	LOGI("Texture loaded OK: " << path
 		<< " (" << width << "x" << height << "), channels=" << channels);
 
 	return true;

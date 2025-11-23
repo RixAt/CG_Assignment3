@@ -86,7 +86,7 @@ void Game::init() {
 	g_roundOverMenu.setAction(1, [this]() { gameState = GameState::Playing; g_menus.clear(); });
 	g_roundOverMenu.setAction(2, []() { exit(0); });
 
-	textures.preload("assets/textures/default_texture.png");
+	textures.loadDefault("assets/textures/default_texture.png");
 	textures.preload("assets/textures/ground.jpg");
 
 	// Spawns ten robots at random XY positions on ground plane

@@ -25,24 +25,61 @@
 
 Texture& TextureManager::get(const std::string& path, bool generateMipmaps) {
     auto it = m_cache.find(path);
-    if (it != m_cache.end())
+    if (it != m_cache.end()) {
+        if (!it->second) {
+            if (!m_default) {
+                m_default = std::make_unique<Texture>();
+                m_default->loadFromFile("assets/textures/default_texture.png", false);
+            }
+            return *m_default;
+        }
         return *it->second;
-
-    auto tex = std::make_unique<Texture>();
-    if (!tex->loadFromFile(path, generateMipmaps)) {
-        std::cerr << "[TextureManager] Failed to load " << path << "\n";
-        // Still store it so we don't spam reload attempts
     }
 
+    auto tex = std::make_unique<Texture>();
+
+    if (!tex->loadFromFile(path, generateMipmaps)) {
+        //std::cerr << "[TextureManager] Failed to load " << path << "\n";
+        LOG_WARN("Texture load failed: " + path + " -> falling back to default");
+        if (!m_default) {
+            m_default = std::make_unique<Texture>();
+            m_default->loadFromFile("assets/textures/default_texture.png", false);
+        }
+        m_cache[path] = nullptr;
+
+        return *m_default;
+    }
+
+    LOG_INFO("Texture loaded: " + path);
+
+	// Store in cache and return reference
     Texture& ref = *tex;
     m_cache[path] = std::move(tex);
     return ref;
 };
 
-void TextureManager::preload(const std::string& path, bool generateMipmaps) {
-    get(path, generateMipmaps);
+// preload(): Preload texture into cache
+// Returns true if successful, false if failed (uses default)
+bool TextureManager::preload(const std::string& path, bool generateMipmaps) {
+    Texture& tex = get(path, generateMipmaps);
+    return (&tex != m_default.get());
 }
 
+// clear(): Clear texture cache
 void TextureManager::clear() {
     m_cache.clear();
+}
+
+// loadDefault(): Load default fallback texture
+// Returns true if successful, false if failed
+bool TextureManager::loadDefault(const std::string& path) {
+    m_default = std::make_unique<Texture>();
+    if (!m_default->loadFromFile(path, false)) {
+        LOG_ERROR("Failed to load default texture: " + path);
+        m_default.reset();
+        return false;
+	}
+
+    LOG_INFO("Default texture loaded: " +  path);
+    return true;
 }

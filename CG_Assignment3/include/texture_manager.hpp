@@ -32,9 +32,12 @@ class TextureManager {
 public:
 	Texture& get(const std::string& path, bool generateMipmaps = false);
 
-	void preload(const std::string& path, bool generateMipmaps = false);
+	bool preload(const std::string& path, bool generateMipmaps = false);
 
 	void clear();
+
+	bool loadDefault(const std::string& path);
 private:
 	std::unordered_map<std::string, std::unique_ptr<Texture>> m_cache;
+	std::unique_ptr<Texture> m_default; // Fallback default texture
 };
