@@ -23,6 +23,7 @@
 #pragma once
 
 #include "texture.h"
+#include "logger.h"
 #include <string>
 #include <unordered_map>
 #include <memory>

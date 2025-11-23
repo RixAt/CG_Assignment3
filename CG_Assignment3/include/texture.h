@@ -21,6 +21,7 @@
 
 #include <string>
 #include <GL/glut.h>
+#include "logger.h"
 
 class Texture {
 public:
@@ -40,6 +41,15 @@ private:
 	GLuint textureID = 0;
 };
 
+
+inline void GLCheck(const char* label, const char* file, int line) {
+	GLenum err;
+	while ((err = glGetError()) != GL_NO_ERROR) {
+		LOGE("GL error at " << label
+			<< " code=" << err);
+	}
+}
+#define GL_CHECK(label) GLCheck(label, __FILE__, __LINE__)
 
 #endif // !TEXTURE_H
 

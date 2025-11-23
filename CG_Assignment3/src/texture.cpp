@@ -20,6 +20,7 @@
 #include "texture.h"
 #include <stb_image.h>
 #include <iostream>
+#include "logger.h"
 
 // Ctor: Initialize texture ID to 0
 Texture::Texture()
@@ -43,9 +44,9 @@ bool Texture::loadFromFile(const std::string& path, bool generateMipmaps) {
 	unsigned char* data = stbi_load(path.c_str(), &width, &height, &channels, 0);
 
 	if (!data) {
-		std::cerr << "[Texture] Failed to load texture: " << path
-			<< std::endl << "Reason: " << stbi_failure_reason()
-			<< std::endl << "Loading default instead." << std::endl;\
+		LOGE("Texture load FAILED: " << path
+			<< " | Reason: " << stbi_failure_reason());
+
 
 		if (path != "assets/textures/default_texture.png") {
 			return loadFromFile("assets/textures/default_texture.png", false);
@@ -61,13 +62,12 @@ bool Texture::loadFromFile(const std::string& path, bool generateMipmaps) {
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 	glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+	GL_CHECK("TexImage2D");
 
 	GLenum err = glGetError();
 	if (err != GL_NO_ERROR) {
 		std::cerr << "GL ERROR after glTexImage2D: " << err << "\n";
 	}
-
-
 
 	// Mipmap generation is not supported by Windows by default (and I dont feel like tackling this right now)
 	//if (generateMipmaps) {
@@ -85,12 +85,17 @@ bool Texture::loadFromFile(const std::string& path, bool generateMipmaps) {
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 
 	stbi_image_free(data);
+
+	LOGI("Loaded texture: " << path
+		<< " (" << width << "x" << height << "), channels=" << channels);
+
 	return true;
 }
 
 // bind(): Bind the texture for use
 void Texture::bind() const {
 	glBindTexture(GL_TEXTURE_2D, textureID);
+	GL_CHECK("BindTexture");
 	return;
 }
 

@@ -148,6 +148,7 @@
     <ClInclude Include="include\GL\glut.h" />
     <ClInclude Include="include\intro_menu.hpp" />
     <ClInclude Include="include\IrrKlang\irrKlang.h" />
+    <ClInclude Include="include\logger.h" />
     <ClInclude Include="include\menu.hpp" />
     <ClInclude Include="include\menu_manager.hpp" />
     <ClInclude Include="include\pause_menu.hpp" />
@@ -166,6 +167,7 @@
     <ClCompile Include="src\effects.cpp" />
     <ClCompile Include="src\game.cpp" />
     <ClCompile Include="src\intro_menu.cpp" />
+    <ClCompile Include="src\logger.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\menu.cpp" />
     <ClCompile Include="src\pause_menu.cpp" />

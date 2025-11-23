@@ -31,6 +31,7 @@
 #include <iostream>
 #include "robots.hpp"
 #include "game.hpp"
+#include "logger.h"
 
 // Window dimensions
 int winW = 640, winH = 480; // Must start with 640x480
@@ -158,6 +159,10 @@ int main(int argc, char** argv) {
 	glutInitWindowPosition(0, 0);
 	glutCreateWindow("Assignment 3 | Ricky Atkinson | ratkin10");
 
+	Logger::instance().setLevel(LogLevel::Debug);
+	Logger::instance().enableFileOutput("robot_hunter.log");
+	LOG_INFO("Game starting");
+
 	PrintInstructions();
 
 	glEnable(GL_DEPTH_TEST); // Enable depth testing for 3D
@@ -165,7 +170,14 @@ int main(int argc, char** argv) {
 	glEnable(GL_SCISSOR_TEST); // Enable scissor test for viewports
 	glClearColor(0.0, 0.0, 0.0, 1.0); // clear the window screen
 
+	LOG_INFO("OpenGL context ready");
+	LOGI("Vendor: " << glGetString(GL_VENDOR));
+	LOGI("Renderer: " << glGetString(GL_RENDERER));
+	LOGI("Version: " << glGetString(GL_VERSION));
+
+	LOG_INFO("Calling game.init()");
 	game.init();
+	LOG_INFO("game.init() complete");
 
 	// Callback functions
 	glutDisplayFunc(MyDisplay);			// Call the drawing function

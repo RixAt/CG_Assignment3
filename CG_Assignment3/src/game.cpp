@@ -23,6 +23,7 @@
 #include <iostream>
 #include <ctime>
 #include "sound.hpp"
+#include "logger.h"
 
 using namespace std;
 
@@ -41,6 +42,8 @@ Game::Game()
 // Preps bullets pool, selects FPV camera for rendering and control
 // Initializes sound system and starts ambient/background music
 void Game::init() {
+	LOG_INFO("Game::init starting");
+
 	srand(time(nullptr));
 	robots.clear();
 
@@ -94,6 +97,8 @@ void Game::init() {
 
 		robots.push_back(new Robot(spawnPos,11.0f));
 	}
+	LOGI("Spawned robots count=" << robots.size());
+
 	// Prepare bullets pool to reduce vector growth
 	bullets.reserve(maxBullets);
 
@@ -105,6 +110,9 @@ void Game::init() {
 	sound::init();
 	sound::playAmbient("assets/audio/ambience.ogg", 0.50f);
 	sound::playBackground("assets/audio/loop.ogg",0.15f);
+	LOG_INFO("Sound system initialized");
+
+	LOG_INFO("Game initialization finished");
 }
 
 // update(dt): Update game world state over time delta dt (in seconds)
@@ -142,9 +150,17 @@ void Game::update(float dt) {
 	if (!anyAlive && timeRemaining > 0.0f && gameState == GameState::Playing) {
 		if (accuracyPercentage() >= 50.0f) {
 			endRound(true);
+			LOGI("Round ended. anyAlive=" << anyAlive
+				<< " accuracy=" << accuracyPercentage()
+				<< " timeRemaining=" << timeRemaining);
+
 		}
 		else {
 			endRound(false);
+			LOGI("Round ended. anyAlive=" << anyAlive
+				<< " accuracy=" << accuracyPercentage()
+				<< " timeRemaining=" << timeRemaining);
+
 		}
 		return;
 	}
@@ -156,6 +172,10 @@ void Game::update(float dt) {
 		bool goodAccuracy = accuracyPercentage() >= 50.0f;
 
 		endRound(allDead && goodAccuracy);
+		LOGI("Round ended. anyAlive=" << anyAlive
+			<< " accuracy=" << accuracyPercentage()
+			<< " timeRemaining=" << timeRemaining);
+
 		return;
 	}
 }
@@ -818,10 +838,17 @@ void Game::endRound(bool success) {
 	);
 
 	g_menus.setActive(&g_roundOverMenu, cachedWinW, cachedWinH);
+
+	LOGI("Game::endRound() success=" << success
+		<< " score=" << score
+		<< " accuracy=" << accuracyPercentage()
+		<< " robotsKilled=" << robotsKilled);
 }
 
 // resetRound(): Reset game state for a new round
 void Game::resetRound() {
+	LOG_INFO("Resetting round");
+
 	score = 0;
 	robotsKilled = 0;
 	timeRemaining = 30.0f;
@@ -837,7 +864,7 @@ void Game::resetRound() {
 		Vector3 spawnPos(x, 0.0f, z);
 		robots.push_back(new Robot(spawnPos, 12.0f));
 	}
-
+	LOGI("Spawned robots count=" << robots.size());
 	bullets.clear();
 
 }
@@ -971,6 +998,7 @@ void Game::handleMouseMotion(int x, int y) {
 
 // openMenu(): Open the game menu
 void Game::openMenu() {
+	LOG_INFO("Opening pause menu");
 	gameState = GameState::Menu;
 	showInstructions = false;
 	g_menus.setActive(&g_pauseMenu, cachedWinW, cachedWinH);

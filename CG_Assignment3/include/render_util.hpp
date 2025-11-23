@@ -26,6 +26,7 @@
 #include "utilities.hpp"
 #include "camera.hpp"
 #include "texture.h"
+#include "logger.h"
 
 // Struct: Viewport
 // Defines a rectangular viewport area
@@ -39,6 +40,7 @@ inline void SetViewport(const Viewport& vp) {
 	glViewport(vp.x, vp.y, vp.width, vp.height);
 	glScissor(vp.x, vp.y, vp.width, vp.height);
 }
+
 
 // Primitive geometry drawing functions
 void DrawCube(RenderMode mode, float size = 1.0f);
