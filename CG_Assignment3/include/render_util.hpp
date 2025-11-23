@@ -25,6 +25,7 @@
 #include <GL/glut.h>
 #include "utilities.hpp"
 #include "camera.hpp"
+#include "texture.h"
 
 // Struct: Viewport
 // Defines a rectangular viewport area
@@ -45,7 +46,7 @@ void DrawSphere(RenderMode mode, float radius = 1.0f);
 void DrawPlane(RenderMode mode, float width, float depth, const Vector3& color);
 
 // Draw a ground plane with grid lines
-void DrawGround(float size = 300.0f, float spacing = 10.0f);
+void DrawGround(const Texture& tex, float size = 300.0f, float spacing = 10.0f);
 // Draw coordinate axes at the origin
 void DrawAxes(float size = 5.0f);
 

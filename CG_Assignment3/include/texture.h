@@ -21,12 +21,14 @@
 
 #include <string>
 #include <GL/glut.h>
-#include <GL/gl.h>
 
 class Texture {
 public:
 	Texture();
 	~Texture();
+
+	Texture(const Texture&) = delete;
+
 
 	bool loadFromFile(const std::string& filename, bool generateMipmaps = true);
 	void bind() const;
@@ -35,7 +37,7 @@ public:
 	GLuint id() const { return textureID; }
 
 private:
-	GLuint textureID;
+	GLuint textureID = 0;
 };
 
 

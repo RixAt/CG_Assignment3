@@ -93,28 +93,53 @@ void DrawPlane(RenderMode mode, float width, float depth, const Vector3& color) 
 	glPopAttrib();
 }
 
-void DrawGround(float size, float spacing) {
+void DrawGround(const Texture& tex, float size, float spacing) {
+
+	//const int numTiles = static_cast<int>(size / spacing);
 	const float halfSize = size / 2.0f;
-	const int numTiles = static_cast<int>(size / spacing);	
-	// Solid ground quad
-	DrawPlane(RenderMode::Solid, size, size, Vector3(0.2f, 0.2f, 0.2f));
+	const int numTiles = static_cast<int>(size / spacing);
 
-	glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT | GL_CURRENT_BIT);
-
-
-	// Adding grid lines to help visualize scale
-	glColor3f(0.3f, 0.3f, 0.3f);
-	glLineWidth(1.0f);
-	glBegin(GL_LINES);
-	for (float i = -size / 2.0f; i <= size / 2.0f; i += spacing) {
-		// lines parallel to Z
-		glVertex3f(i, 0.01f, -size / 2.0f);
-		glVertex3f(i, 0.01f, size / 2.0f);
-		// lines parallel to X
-		glVertex3f(-size / 2.0f, 0.01f, i);
-		glVertex3f(size / 2.0f, 0.01f, i);
+	if (tex.id() == 0) {
+		
+		DrawPlane(RenderMode::Solid, size, size, Vector3(0.2f, 0.2f, 0.2f));
+		return;
 	}
+
+	
+	glDisable(GL_CULL_FACE);
+	glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT | GL_CURRENT_BIT);
+	glEnable(GL_TEXTURE_2D);
+	tex.bind();
+
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+	glColor3f(1, 1, 1);
+	glNormal3f(0, 1, 0);
+
+	glBegin(GL_QUADS);
+	glTexCoord2f(0, 0);       glVertex3f(-halfSize, 0, -halfSize);
+	glTexCoord2f(numTiles, 0);       glVertex3f(halfSize, 0, -halfSize);
+	glTexCoord2f(numTiles, numTiles);  glVertex3f(halfSize, 0, halfSize);
+	glTexCoord2f(0, numTiles);  glVertex3f(-halfSize, 0, halfSize);
 	glEnd();
+
+	tex.unbind();
+	glDisable(GL_TEXTURE_2D);
+	glEnable(GL_CULL_FACE);
+
+	//// Adding grid lines to help visualize scale
+	//glColor3f(0.3f, 0.3f, 0.3f);
+	//glLineWidth(1.0f);
+	//glBegin(GL_LINES);
+	//for (float i = -size / 2.0f; i <= size / 2.0f; i += spacing) {
+	//	// lines parallel to Z
+	//	glVertex3f(i, 0.01f, -size / 2.0f);
+	//	glVertex3f(i, 0.01f, size / 2.0f);
+	//	// lines parallel to X
+	//	glVertex3f(-size / 2.0f, 0.01f, i);
+	//	glVertex3f(size / 2.0f, 0.01f, i);
+	//}
+	//glEnd();
 
 	glPopAttrib();
 }

@@ -33,6 +33,7 @@
 #include "pause_menu.hpp"
 #include "intro_menu.hpp"
 #include "roundover_menu.hpp"
+#include "texture_manager.hpp"
 
 // Forward declarations
 struct Vector3;
@@ -290,6 +291,8 @@ private:
 	PauseMenu g_pauseMenu;
 	IntroMenu g_introMenu;
 	RoundOverMenu g_roundOverMenu;
+
+	mutable TextureManager textures;
 };
 
 

@@ -83,6 +83,8 @@ void Game::init() {
 	g_roundOverMenu.setAction(1, [this]() { gameState = GameState::Playing; g_menus.clear(); });
 	g_roundOverMenu.setAction(2, []() { exit(0); });
 
+	textures.preload("assets/textures/ground.jpg");
+
 	// Spawns ten robots at random XY positions on ground plane
 	for (int i = 0; i < 10; ++i) {
 		float x = (std::rand() % 200 - 100);
@@ -186,7 +188,8 @@ void Game::draw(int winW, int winH) const {
 
 // drawWorld(): Render the 3D world: ground plane, axes, robots
 void Game::drawWorld() const {
-	DrawGround();
+	auto& groundTex = textures.get("assets/textures/ground.jpg");
+	DrawGround(groundTex);
 	if (showAxes) {
 		DrawAxes(100.0f);
 	}

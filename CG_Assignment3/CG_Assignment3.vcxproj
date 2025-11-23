@@ -142,6 +142,8 @@
     <ClInclude Include="include\effects.hpp" />
     <ClInclude Include="include\game.hpp" />
     <ClInclude Include="include\gameobject.hpp" />
+    <ClInclude Include="include\GL\freeglut.h" />
+    <ClInclude Include="include\GL\freeglut_ext.h" />
     <ClInclude Include="include\GL\freeglut_std.h" />
     <ClInclude Include="include\GL\glut.h" />
     <ClInclude Include="include\intro_menu.hpp" />
@@ -154,6 +156,7 @@
     <ClInclude Include="include\roundover_menu.hpp" />
     <ClInclude Include="include\sound.hpp" />
     <ClInclude Include="include\texture.h" />
+    <ClInclude Include="include\texture_manager.hpp" />
     <ClInclude Include="include\utilities.hpp" />
     <ClInclude Include="lib\freeglut.lib" />
   </ItemGroup>
@@ -171,6 +174,7 @@
     <ClCompile Include="src\roundover_menu.cpp" />
     <ClCompile Include="src\sound.cpp" />
     <ClCompile Include="src\texture.cpp" />
+    <ClCompile Include="src\texture_manager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="lib\assimp-vc143-mt.lib" />
