@@ -50,6 +50,8 @@ void DrawPlane(RenderMode mode, float width, float depth, const Vector3& color);
 void DrawTexturedCube();
 void DrawTexturedSphere(float radius);
 
+void DrawSkybox(const Texture* const faces[6], const Vector3& camPos, float size);
+
 // Draw a ground plane with grid lines
 void DrawGround(const Texture& tex, float size = 300.0f, float spacing = 50.0f);
 // Draw coordinate axes at the origin

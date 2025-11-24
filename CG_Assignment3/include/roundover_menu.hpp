@@ -26,7 +26,7 @@
 class RoundOverMenu : public Menu {
 public:
     RoundOverMenu() {
-        setItems({ "RETRY", "RESUME VIEW", "EXIT" });
+        setItems({ "RETRY", "EXIT" });
         setSelectedIndex(0);
     }
 

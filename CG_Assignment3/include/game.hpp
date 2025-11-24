@@ -59,6 +59,9 @@ enum class BulletSpeed {Slow, Fast, VeryFast };
 // EnumClass: LightMode, lighting modes for rendering
 enum class LightMode { Directional, Point};
 
+// Enum Class: ShadingMode, shading modes for geometry
+enum class ShadingMode { Smooth, Flat };
+
 // Class: Game
 // The main application object, owns world objects and the loop.
 class Game {
@@ -307,7 +310,9 @@ private:
 	bool m_showImportedModel = true;
 
 	LightMode lightMode = LightMode::Directional;
-	bool smoothShading = true; // GL_SMOOTH default
+	ShadingMode shadingMode = ShadingMode::Smooth;
+
+	Texture* skyboxTex[6];
 };
 
 

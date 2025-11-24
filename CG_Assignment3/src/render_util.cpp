@@ -21,6 +21,7 @@
 // ====================================================================
 
 #include "render_util.hpp"
+#include "stb_image.h"
 
 
 void DrawCube(RenderMode mode, float size) {
@@ -91,6 +92,92 @@ void DrawTexturedCube() {
 
 	glEnd();
 }
+
+void DrawSkybox(const Texture* const faces[6], const Vector3& camPos, float size)
+
+
+{
+	stbi_set_flip_vertically_on_load(false); // for skybox
+
+	glPushAttrib(GL_ENABLE_BIT | GL_DEPTH_BUFFER_BIT | GL_CURRENT_BIT);
+
+	glDisable(GL_LIGHTING);
+	glDisable(GL_COLOR_MATERIAL);
+	glEnable(GL_TEXTURE_2D);
+
+	glDepthMask(GL_FALSE);      // don't write depth
+	glDepthFunc(GL_LEQUAL);     // allow background
+
+	glColor3f(1, 1, 1);
+
+	float hs = size * 0.5f;
+	float x = camPos.x, y = camPos.y, z = camPos.z;
+
+	glPushMatrix();
+	glTranslatef(x, y, z);   // move cube to camera
+
+	// RIGHT (+X)
+	faces[0]->bind();
+	glBegin(GL_QUADS);
+	glTexCoord2f(0, 0); glVertex3f(hs, -hs, -hs);
+	glTexCoord2f(1, 0); glVertex3f(hs, -hs, hs);
+	glTexCoord2f(1, 1); glVertex3f(hs, hs, hs);
+	glTexCoord2f(0, 1); glVertex3f(hs, hs, -hs);
+	glEnd();
+
+	// LEFT (-X)
+	faces[1]->bind();
+	glBegin(GL_QUADS);
+	glTexCoord2f(0, 0); glVertex3f(-hs, -hs, hs);
+	glTexCoord2f(1, 0); glVertex3f(-hs, -hs, -hs);
+	glTexCoord2f(1, 1); glVertex3f(-hs, hs, -hs);
+	glTexCoord2f(0, 1); glVertex3f(-hs, hs, hs);
+	glEnd();
+
+	// TOP (+Y)
+	faces[2]->bind();
+	glBegin(GL_QUADS);
+	glTexCoord2f(0, 0); glVertex3f(-hs, hs, -hs);
+	glTexCoord2f(1, 0); glVertex3f(hs, hs, -hs);
+	glTexCoord2f(1, 1); glVertex3f(hs, hs, hs);
+	glTexCoord2f(0, 1); glVertex3f(-hs, hs, hs);
+	glEnd();
+
+	// BOTTOM (-Y)
+	faces[3]->bind();
+	glBegin(GL_QUADS);
+	glTexCoord2f(0, 0); glVertex3f(-hs, -hs, hs);
+	glTexCoord2f(1, 0); glVertex3f(hs, -hs, hs);
+	glTexCoord2f(1, 1); glVertex3f(hs, -hs, -hs);
+	glTexCoord2f(0, 1); glVertex3f(-hs, -hs, -hs);
+	glEnd();
+
+	// FRONT (+Z)
+	faces[4]->bind();
+	glBegin(GL_QUADS);
+	glTexCoord2f(0, 0); glVertex3f(hs, -hs, hs);
+	glTexCoord2f(1, 0); glVertex3f(-hs, -hs, hs);
+	glTexCoord2f(1, 1); glVertex3f(-hs, hs, hs);
+	glTexCoord2f(0, 1); glVertex3f(hs, hs, hs);
+	glEnd();
+
+	// BACK (-Z)
+	faces[5]->bind();
+	glBegin(GL_QUADS);
+	glTexCoord2f(0, 0); glVertex3f(-hs, -hs, -hs);
+	glTexCoord2f(1, 0); glVertex3f(hs, -hs, -hs);
+	glTexCoord2f(1, 1); glVertex3f(hs, hs, -hs);
+	glTexCoord2f(0, 1); glVertex3f(-hs, hs, -hs);
+	glEnd();
+
+	glPopMatrix();
+
+	glDepthMask(GL_TRUE);
+	glPopAttrib();
+
+	stbi_set_flip_vertically_on_load(true);
+}
+
 
 void DrawSphere(RenderMode mode, float radius) {
 	glPushAttrib(GL_CURRENT_BIT | GL_POLYGON_BIT | GL_POINT_BIT | GL_ENABLE_BIT | GL_LINE_BIT);

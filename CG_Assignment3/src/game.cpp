@@ -83,12 +83,25 @@ void Game::init() {
 
 	// RoundOver menu actions
 	g_roundOverMenu.setAction(0, [this]() { resetRound(); gameState = GameState::Playing; g_menus.clear(); });
-	g_roundOverMenu.setAction(1, [this]() { gameState = GameState::Playing; g_menus.clear(); });
-	g_roundOverMenu.setAction(2, []() { exit(0); });
+	//g_roundOverMenu.setAction(1, [this]() { gameState = GameState::Playing; g_menus.clear(); });
+	g_roundOverMenu.setAction(1, []() { exit(0); });
 
 	textures.loadDefault("assets/textures/default_texture.png");
 	textures.preload("assets/textures/ground.jpg");
 	textures.preload("assets/textures/robot_diffuse.png");
+	textures.preload("assets/textures/skybox/right.png");
+	textures.preload("assets/textures/skybox/left.png");
+	textures.preload("assets/textures/skybox/top.png");
+	textures.preload("assets/textures/skybox/bottom.png");
+	textures.preload("assets/textures/skybox/front.png");
+	textures.preload("assets/textures/skybox/back.png");
+
+	skyboxTex[0] = &textures.get("assets/textures/skybox/right.png");
+	skyboxTex[1] = &textures.get("assets/textures/skybox/left.png");
+	skyboxTex[2] = &textures.get("assets/textures/skybox/top.png");
+	skyboxTex[3] = &textures.get("assets/textures/skybox/bottom.png");
+	skyboxTex[4] = &textures.get("assets/textures/skybox/front.png");
+	skyboxTex[5] = &textures.get("assets/textures/skybox/back.png");
 
 	Texture* robotTex = &textures.get("assets/textures/robot_diffuse.png");
 
@@ -127,13 +140,15 @@ void Game::init() {
 
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
+	glEnable(GL_LIGHT1);
+	glEnable(GL_LIGHT2);
 	glEnable(GL_COLOR_MATERIAL);
 	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 
 	glEnable(GL_NORMALIZE);
 
 	// Nice default shading
-	glShadeModel(GL_SMOOTH);
+	//glShadeModel(GL_SMOOTH);
 
 	// Optional: specular highlights
 	GLfloat spec[] = { 0.3f, 0.3f, 0.3f, 1.f };
@@ -338,9 +353,16 @@ void Game::drawMainViewport(const Viewport& vp) const {
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
 	glEnable(GL_DEPTH_TEST);
+
+	Vector3 eye, right, up, forward;
+	cams.renderCam->getEyeBasis(eye, right, up, forward);
 	
 	cams.renderCam->applyView(vp.width, vp.height);
+	DrawSkybox(skyboxTex, eye, 1000.0f);
+
+	glShadeModel(shadingMode == ShadingMode::Flat ? GL_FLAT : GL_SMOOTH);
 	setupLights();
+	
 	drawWorld();
 	bulletsDraw(bullets, g_renderMode);
 	effectsDrawImpacts(impacts);
@@ -369,8 +391,9 @@ void Game::drawInsetViewport(const Viewport& vp) const {
 							: (cams.renderCam == &cams.cameraESV) ? &cams.cameraFPV
 							: &cams.cameraESV;
 	
+	DrawSkybox(skyboxTex, insetCam->getPosition(), 1000.0f);
 	insetCam->applyView(vp.width, vp.height);
-
+	glShadeModel(shadingMode == ShadingMode::Flat ? GL_FLAT : GL_SMOOTH);
 	setupLights();
 	drawWorld();
 	bulletsDraw(bullets, g_renderMode);
@@ -552,7 +575,7 @@ void Game::drawActiveMenu(int winW, int winH) const {
 
 	glEnable(GL_SCISSOR_TEST);
 	glEnable(GL_DEPTH_TEST);
-	glDisable(GL_LIGHTING);
+	glEnable(GL_LIGHTING);
 }
 
 
@@ -758,9 +781,9 @@ void Game::handleKey(unsigned char key) {
 		break;
 	case 'l':
 	case 'L':
-		lightMode = (lightMode == LightMode::Directional)
+		lightMode = ((lightMode == LightMode::Directional)
 			? LightMode::Point
-			: LightMode::Directional;
+			: LightMode::Directional);
 		glutPostRedisplay();
 		break;
 
@@ -819,9 +842,15 @@ void Game::handleSpecialKey(int key) {
 		
 		glutPostRedisplay();
 		break;
-	case GLUT_KEY_F3:
-		
-		
+	case GLUT_KEY_F4:
+		shadingMode = (shadingMode == ShadingMode::Smooth)
+			? ShadingMode::Flat
+			: ShadingMode::Smooth;
+
+		LOG_INFO(std::string("Shading mode: ") +
+			(shadingMode == ShadingMode::Flat ? "FLAT" : "SMOOTH"));
+
+		glutPostRedisplay();
 		break;
 	case GLUT_KEY_F6:
 		// Debug mode:
@@ -934,6 +963,13 @@ void Game::resetRound() {
 		robots.push_back(new Robot(spawnPos, 12.0f));
 	}
 	LOGI("Spawned robots count=" << robots.size());
+
+	Texture* robotTex = &textures.get("assets/textures/robot_diffuse.png");
+
+	for (auto& r : robots) {
+		r->setTexture(robotTex);
+	}
+
 	bullets.clear();
 
 }
@@ -1096,35 +1132,46 @@ void Game::toggleDebugMode() {
 }
 
 void Game::setupLights() const {
-	// Common ambient for both modes
-	GLfloat ambient[] = { 0.20f, 0.20f, 0.20f, 1.0f };
-	glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
+	// a subtle global ambient so nothing is pitch black
+	GLfloat globalAmbient[] = { 0.12f, 0.12f, 0.12f, 1.0f };
+	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globalAmbient);
+
 
 	if (lightMode == LightMode::Directional) {
 		//LOG_DEBUG("Applying directional light");
+		glEnable(GL_LIGHT0);
+		glDisable(GL_LIGHT1);
+		glDisable(GL_LIGHT2);
 		applyDirectionalLight();
-	}	
-	else {
+	} else {
 		//LOG_DEBUG("Applying point light");
 		applyPointLight();
+		glDisable(GL_LIGHT0);
+		glEnable(GL_LIGHT1);
+		glEnable(GL_LIGHT2);
 	}
 		
 }
 
 void Game::applyDirectionalLight() const {
-	// Directional light: w = 0
-	GLfloat dirPos[] = { -0.3f, 1.0f, 0.2f, 0.0f };
-	GLfloat diffuse[] = { 1.0f, 1.0f, 0.95f, 1.0f };
-	GLfloat specular[] = { 0.6f, 0.6f, 0.6f, 1.0f };
+	GLfloat dirPos[] = { -0.4f, 1.0f, 0.3f, 0.0f }; // w = 0
+
+	GLfloat ambient[] = { 0.30f, 0.30f, 0.35f, 1.0f };
+	GLfloat diffuse[] = { 0.95f, 0.95f, 1.05f, 1.0f }; // slightly cool
+	GLfloat specular[] = { 0.35f, 0.35f, 0.40f, 1.0f };
 
 	glLightfv(GL_LIGHT0, GL_POSITION, dirPos);
+	glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
 
-	// No attenuation for sunlight
+	// No attenuation for sun
 	glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 1.f);
 	glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.f);
 	glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.f);
+
+	// Ensure not treated as spotlight
+	glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 180.f);
 }
 
 void Game::applyPointLight() const {
@@ -1138,25 +1185,42 @@ void Game::applyPointLight() const {
 	GLfloat pos[] = { lightPos.x, lightPos.y, lightPos.z, 1.0f };
 
 	// Warm, strong spotlight
-	GLfloat ambient[] = { 0.05f, 0.05f, 0.05f, 1.0f };
+	GLfloat ambient[] = { 0.18f, 0.18f, 0.18f, 1.0f };
 	GLfloat diffuse[] = { 1.8f, 1.6f, 1.3f, 1.0f };
 	GLfloat specular[] = { 1.2f, 1.1f, 1.0f, 1.0f };
 
-	glLightfv(GL_LIGHT0, GL_POSITION, pos);
-	glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
-	glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
+	glLightfv(GL_LIGHT1, GL_POSITION, pos);
+	glLightfv(GL_LIGHT1, GL_AMBIENT, ambient);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuse);
+	glLightfv(GL_LIGHT1, GL_SPECULAR, specular);
 
 	// ---- Spotlight settings ----
 	GLfloat dir[] = { forward.x, forward.y, forward.z }; // points where camera looks
-	glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, dir);
+	glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, dir);
 
-	glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 25.0f);   // cone angle (degrees). 10–25 is “flashlight”
-	glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 2.0f); // concentration. higher = tighter center hotspot
+	glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 25.0f);   // cone angle (degrees). 10–25 is “flashlight”
+	glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 12.0f); // concentration. higher = tighter center hotspot
 
 	// distance falloff so it feels like a real beam
-	glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 0.8f);
-	glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.02f);
-	glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.005f);
+	glLightf(GL_LIGHT1, GL_CONSTANT_ATTENUATION, 0.8f);
+	glLightf(GL_LIGHT1, GL_LINEAR_ATTENUATION, 0.02f);
+	glLightf(GL_LIGHT1, GL_QUADRATIC_ATTENUATION, 0.005f);
+
+	// ---- Weak fill light using GL_LIGHT2 ----
+	GLfloat fillPos[] = { 0.0f, 15.0f, 0.0f, 1.0f };
+
+	GLfloat fillAmbient[] = { 0.12f, 0.12f, 0.12f, 1.0f };
+	GLfloat fillDiffuse[] = { 0.18f, 0.18f, 0.22f, 1.0f }; // subtle bluish fill
+	GLfloat fillSpecular[] = { 0.0f,  0.0f,  0.0f,  1.0f };
+
+	glLightfv(GL_LIGHT2, GL_POSITION, fillPos);
+	glLightfv(GL_LIGHT2, GL_AMBIENT, fillAmbient);
+	glLightfv(GL_LIGHT2, GL_DIFFUSE, fillDiffuse);
+	glLightfv(GL_LIGHT2, GL_SPECULAR, fillSpecular);
+
+	glLightf(GL_LIGHT2, GL_CONSTANT_ATTENUATION, 1.0f);
+	glLightf(GL_LIGHT2, GL_LINEAR_ATTENUATION, 0.02f);
+	glLightf(GL_LIGHT2, GL_QUADRATIC_ATTENUATION, 0.003f);
+
 }
 
