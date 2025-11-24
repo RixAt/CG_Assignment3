@@ -312,7 +312,7 @@ private:
 	mutable TextureManager textures;
 
 	Model m_importedModel;
-	bool m_showImportedModel = true;
+	bool useBarrels = true;
 
 	LightMode lightMode = LightMode::Directional;
 	ShadingMode shadingMode = ShadingMode::Smooth;

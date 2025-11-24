@@ -128,15 +128,17 @@ void Game::init() {
 		Barrel::setSharedModel(&m_barrelModel);
 	}
 
-	for (int i = 0; i < 5; ++i) {
-		float x = (std::rand() % 200 - 100);
-		float z = (std::rand() % 200 - 100);
-		Vector3 spawnPos(x, 0.0f, z);
+	if (useBarrels) {
+		for (int i = 0; i < 5; ++i) {
+			float x = (std::rand() % 200 - 100);
+			float z = (std::rand() % 200 - 100);
+			Vector3 spawnPos(x, 0.0f, z);
 
-		m_barrels.push_back(new Barrel(spawnPos));
+			m_barrels.push_back(new Barrel(spawnPos));
+		}
+		LOGI("Spawned barrels count= " + m_barrels.size());
 	}
-	LOGI("Spawned barrels count= " + m_barrels.size());
-
+	
 	// Spawns ten robots at random XY positions on ground plane
 	for (int i = 0; i < 10; ++i) {
 		float x = (std::rand() % 200 - 100);
@@ -204,14 +206,16 @@ void Game::update(float dt) {
 		}
 	}
 
-	for (auto* b : m_barrels)
-		b->update(dt);
+	if (useBarrels) {
+		for (auto* b : m_barrels)
+			b->update(dt);
+	}
 
 	// Update effects
 	effectsUpdate(impacts, dt);
 	
 	// Advance bullets and check for hits
-	bulletsUpdate(bullets, dt, robots, robotsKilled, shotsHit, score, 3.0f, 100, &impacts, &m_barrels);
+	bulletsUpdate(bullets, dt, robots, robotsKilled, shotsHit, score, 3.0f, 100, &impacts, useBarrels ? &m_barrels : nullptr);
 
 	// Check if any robots are still alive
 	bool anyAlive = false;
@@ -299,9 +303,10 @@ void Game::drawWorld() const {
 		}
 	}
 
-	for (auto* b : m_barrels)
-		b->draw(g_renderMode);
-
+	if (useBarrels) {
+		for (auto* b : m_barrels)
+			b->draw(g_renderMode);
+	}
 
 	/*if (m_showImportedModel) {
 		m_importedModel.draw(g_renderMode);
@@ -804,7 +809,23 @@ void Game::handleKey(unsigned char key) {
 	case 'O':
 		// Toggle imported model display
 		sound::playSFX("assets/audio/click.ogg", 0.05f);
-		m_showImportedModel = !m_showImportedModel;
+		useBarrels = !useBarrels;
+		if (!useBarrels) {
+			// delete existing barrels so they disappear + stop colliding
+			for (auto* b : m_barrels) delete b;
+			m_barrels.clear();
+			LOG_INFO("Barrels disabled.");
+		}
+		else {
+			// respawn barrels when re-enabled
+			for (int i = 0; i < 5; ++i) {
+				float x = (std::rand() % 200 - 100);
+				float z = (std::rand() % 200 - 100);
+				Vector3 spawnPos(x, 0.0f, z);
+				m_barrels.push_back(new Barrel(spawnPos));
+			}
+			LOG_INFO("Barrels enabled (respawned).");
+		}
 		glutPostRedisplay();
 		break;
 	case 'l':
@@ -1012,14 +1033,15 @@ void Game::resetRound() {
 	for (auto* b : m_barrels) delete b;
 	m_barrels.clear();
 
-	for (int i = 0; i < 5; ++i) {
-		float x = (std::rand() % 200 - 100);
-		float z = (std::rand() % 200 - 100);
-		Vector3 spawnPos(x, 0.0f, z);
-
-		m_barrels.push_back(new Barrel(spawnPos));
+	if (useBarrels) {
+		for (int i = 0; i < 5; ++i) {
+			float x = (std::rand() % 200 - 100);
+			float z = (std::rand() % 200 - 100);
+			Vector3 spawnPos(x, 0.0f, z);
+			m_barrels.push_back(new Barrel(spawnPos));
+		}
+		LOGI("Spawned barrels count=" << m_barrels.size());
 	}
-	LOGI("Spawned barrels count= " << m_barrels.size());
 	
 
 	bullets.clear();
