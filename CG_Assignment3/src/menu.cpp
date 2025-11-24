@@ -20,6 +20,7 @@
 #include "render_util.hpp"
 
 void Menu::drawBackground(int winW, int winH) const {
+    glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT | GL_TEXTURE_BIT | GL_LIGHTING_BIT);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_LIGHTING);
     glDisable(GL_TEXTURE_2D);
@@ -36,6 +37,11 @@ void Menu::drawBackground(int winW, int winH) const {
     glEnd();
 
     glDisable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_TEXTURE_2D);
+
+    glPopAttrib();
 }
 
 void Menu::drawTitle() const {

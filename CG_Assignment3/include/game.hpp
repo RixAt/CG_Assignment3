@@ -55,6 +55,10 @@ enum class GameState { ShowIntro, Playing, RoundOver, Menu };
 //   Fast - Fast speed
 //   VeryFast - Very fast speed
 enum class BulletSpeed {Slow, Fast, VeryFast };
+
+// EnumClass: LightMode, lighting modes for rendering
+enum class LightMode { Directional, Point};
+
 // Class: Game
 // The main application object, owns world objects and the loop.
 class Game {
@@ -146,6 +150,10 @@ public:
 
 	bool isDebugMode() const { return m_debugMode; }
 	void toggleDebugMode();
+
+	void setupLights() const;
+	void applyDirectionalLight() const;
+	void applyPointLight() const;
 
 private:
 	// Draws the world objects (robots, bullets, effects)
@@ -297,6 +305,9 @@ private:
 
 	Model m_importedModel;
 	bool m_showImportedModel = true;
+
+	LightMode lightMode = LightMode::Directional;
+	bool smoothShading = true; // GL_SMOOTH default
 };
 
 

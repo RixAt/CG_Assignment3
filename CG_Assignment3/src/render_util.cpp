@@ -153,7 +153,7 @@ void DrawTexturedSphere(float radius) {
 
 void DrawPlane(RenderMode mode, float width, float depth, const Vector3& color) {
 	glPushAttrib(GL_CURRENT_BIT | GL_POLYGON_BIT | GL_POINT_BIT | GL_ENABLE_BIT | GL_LINE_BIT);
-	glDisable(GL_LIGHTING);
+	//glDisable(GL_LIGHTING);
 	glDisable(GL_CULL_FACE);
 	glColor3f(color.x, color.y, color.z);
 	float w = width / 2.0f;
@@ -339,7 +339,7 @@ void DrawCameraFrustum(const Camera& cam, float aspect, float scale, const Vecto
 	const Vector3 fbr = fc - (up * (hFar / 2.0f)) + (right * (wFar / 2.0f));
 
 	glPushAttrib(GL_ENABLE_BIT | GL_LINE_BIT | GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	//glDisable(GL_LIGHTING);
+	glDisable(GL_LIGHTING);
 	glLineWidth(1.5f);
 	glColor3f(color.x, color.y, color.z);
 	glBegin(GL_LINES);
@@ -358,7 +358,7 @@ void DrawCameraFrustum(const Camera& cam, float aspect, float scale, const Vecto
 
 
 	glEnd();
-	//glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHTING);
 	glPopAttrib();
 }
 

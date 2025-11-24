@@ -125,6 +125,23 @@ void Game::init() {
 	cams.setRenderFPV();
 	cams.controlCam = &cams.cameraFPV;
 
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+	glEnable(GL_COLOR_MATERIAL);
+	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+
+	glEnable(GL_NORMALIZE);
+
+	// Nice default shading
+	glShadeModel(GL_SMOOTH);
+
+	// Optional: specular highlights
+	GLfloat spec[] = { 0.3f, 0.3f, 0.3f, 1.f };
+	GLfloat shininess[] = { 16.f };
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spec);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
+
+
 	// BONUS: Initialize sound system and start ambient/background music
 	sound::init();
 	sound::playAmbient("assets/audio/ambience.ogg", 0.50f);
@@ -323,6 +340,7 @@ void Game::drawMainViewport(const Viewport& vp) const {
 	glEnable(GL_DEPTH_TEST);
 	
 	cams.renderCam->applyView(vp.width, vp.height);
+	setupLights();
 	drawWorld();
 	bulletsDraw(bullets, g_renderMode);
 	effectsDrawImpacts(impacts);
@@ -352,6 +370,8 @@ void Game::drawInsetViewport(const Viewport& vp) const {
 							: &cams.cameraESV;
 	
 	insetCam->applyView(vp.width, vp.height);
+
+	setupLights();
 	drawWorld();
 	bulletsDraw(bullets, g_renderMode);
 	effectsDrawImpacts(impacts);
@@ -376,6 +396,7 @@ void Game::drawHUDViewport(const Viewport& vp) const {
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glClearColor(0, 0, 0, 1);
 	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_LIGHTING);
 	
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
@@ -498,6 +519,7 @@ void Game::drawHUDViewport(const Viewport& vp) const {
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_LIGHTING);
 }
 
 void Game::drawActiveMenu(int winW, int winH) const {
@@ -505,6 +527,8 @@ void Game::drawActiveMenu(int winW, int winH) const {
 
 	// escape HUD clipping
 	glDisable(GL_SCISSOR_TEST);
+	glDisable(GL_LIGHTING);
+	glDisable(GL_DEPTH_TEST);
 	glViewport(0, 0, winW, winH);
 
 	// fullscreen ortho
@@ -528,6 +552,7 @@ void Game::drawActiveMenu(int winW, int winH) const {
 
 	glEnable(GL_SCISSOR_TEST);
 	glEnable(GL_DEPTH_TEST);
+	glDisable(GL_LIGHTING);
 }
 
 
@@ -724,6 +749,21 @@ void Game::handleKey(unsigned char key) {
 		}
 		glutPostRedisplay();
 		break;
+	case 'o':
+	case 'O':
+		// Toggle imported model display
+		sound::playSFX("assets/audio/click.ogg", 0.05f);
+		m_showImportedModel = !m_showImportedModel;
+		glutPostRedisplay();
+		break;
+	case 'l':
+	case 'L':
+		lightMode = (lightMode == LightMode::Directional)
+			? LightMode::Point
+			: LightMode::Directional;
+		glutPostRedisplay();
+		break;
+
 	default:
 		break;
 	}
@@ -732,6 +772,7 @@ void Game::handleKey(unsigned char key) {
 //handleSpecialKey(): Handle special key input (arrow keys, F-keys)
 // F1: toggle fullscreen
 // F2: toggle FPV/ESV view
+// F3: 
 // Arrow keys: move/turn camera
 void Game::handleSpecialKey(int key) {
 	// Early out if round over or showing intro (old)
@@ -777,6 +818,10 @@ void Game::handleSpecialKey(int key) {
 		}
 		
 		glutPostRedisplay();
+		break;
+	case GLUT_KEY_F3:
+		
+		
 		break;
 	case GLUT_KEY_F6:
 		// Debug mode:
@@ -1049,3 +1094,69 @@ void Game::toggleDebugMode() {
 	m_debugMode = !m_debugMode;
 	std::cout << "[Debug] Debug mode " << (m_debugMode ? "ON" : "OFF") << std::endl;
 }
+
+void Game::setupLights() const {
+	// Common ambient for both modes
+	GLfloat ambient[] = { 0.20f, 0.20f, 0.20f, 1.0f };
+	glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
+
+	if (lightMode == LightMode::Directional) {
+		//LOG_DEBUG("Applying directional light");
+		applyDirectionalLight();
+	}	
+	else {
+		//LOG_DEBUG("Applying point light");
+		applyPointLight();
+	}
+		
+}
+
+void Game::applyDirectionalLight() const {
+	// Directional light: w = 0
+	GLfloat dirPos[] = { -0.3f, 1.0f, 0.2f, 0.0f };
+	GLfloat diffuse[] = { 1.0f, 1.0f, 0.95f, 1.0f };
+	GLfloat specular[] = { 0.6f, 0.6f, 0.6f, 1.0f };
+
+	glLightfv(GL_LIGHT0, GL_POSITION, dirPos);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
+
+	// No attenuation for sunlight
+	glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 1.f);
+	glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.f);
+	glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.f);
+}
+
+void Game::applyPointLight() const {
+	// Get camera basis
+	Vector3 eye, right, up, forward;
+	cams.renderCam->getEyeBasis(eye, right, up, forward);
+
+	// Put the light at the camera (or a tiny bit forward to avoid self-lighting artifacts)
+	Vector3 lightPos = eye + forward * 0.5f;
+
+	GLfloat pos[] = { lightPos.x, lightPos.y, lightPos.z, 1.0f };
+
+	// Warm, strong spotlight
+	GLfloat ambient[] = { 0.05f, 0.05f, 0.05f, 1.0f };
+	GLfloat diffuse[] = { 1.8f, 1.6f, 1.3f, 1.0f };
+	GLfloat specular[] = { 1.2f, 1.1f, 1.0f, 1.0f };
+
+	glLightfv(GL_LIGHT0, GL_POSITION, pos);
+	glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
+
+	// ---- Spotlight settings ----
+	GLfloat dir[] = { forward.x, forward.y, forward.z }; // points where camera looks
+	glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, dir);
+
+	glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 25.0f);   // cone angle (degrees). 10–25 is “flashlight”
+	glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 2.0f); // concentration. higher = tighter center hotspot
+
+	// distance falloff so it feels like a real beam
+	glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 0.8f);
+	glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.02f);
+	glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.005f);
+}
+
