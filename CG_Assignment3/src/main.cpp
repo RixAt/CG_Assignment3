@@ -71,10 +71,14 @@ static void PrintInstructions() {
 		<< "a: Toggle axis display on/off at world origin" << std::endl
 		<< "b: Toggle bullet speed (slow, fast, very fast)" << std::endl
 		<< "m: Toggle all robot motion" << std::endl
+		<< "l: Toggle lighting on/off" << std::endl
+		<< "o: Toggle use of imported model" << std::endl
 		<< "d: Toggle camera debug frustums" << std::endl
 		<< "r: Reset mission (after round over)" << std::endl
 		<< "F1: Toggle fullscreen/windowed mode" << std::endl
 		<< "F2: Toggle First Person View(FPV)/Entire Scene View(ESV)" << std::endl
+		<< "F3: Toggle sound" << std::endl
+		<< "F4: Toggle shading (smooth/flat)" << std::endl
 		<< "Up: Move the camera forward" << std::endl
 		<< "Down: Move the camera backward" << std::endl
 		<< "Left: Rotate the camera left" << std::endl

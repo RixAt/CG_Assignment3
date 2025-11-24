@@ -56,6 +56,10 @@ namespace sound {
 	//void stopMusic();
 	// Set master volume
 	void setMasterVolume(float volume); // volume: 0.0 to 1.0
+
+	void setEnabled(bool enabled);
+	void toggleEnabled();
+	bool isEnabled();
 	
 
 }

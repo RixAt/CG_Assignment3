@@ -64,9 +64,10 @@ void Game::init() {
 	g_introMenu.setLines({
 	"Controls:",
 	"W wireframe | S solid | V vertices | C colliders",
-	"B bullet speed | M motion | F1 fullscreen | F2 FPV/ESV",
-	"A axes | Arrows move/turn | Space fire",
-	"ESC menu | I instructions/pause"
+	"B bullet speed | M motion | A axes | L lighting | O use model",
+	"F1 fullscreen | F2 FPV/ESV | F3 sound toggle | F4 toggle shading",
+	"Arrows move/turn camera | Space fire",
+	"ESC pause menu | I full instructions"
 		});
 
 	g_introMenu.setAction(0, [this]() {
@@ -848,6 +849,12 @@ void Game::handleSpecialKey(int key) {
 			sound::playSFX("assets/audio/click.ogg", 0.05f);
 			toggleFullscreen();
 			break;
+		case GLUT_KEY_F3:
+			// Toggle sound on/off
+			LOG_INFO(std::string("Sound: ") + (sound::isEnabled() ? "OFF" : "ON"));
+			sound::toggleEnabled();
+
+			break;
 		default:
 			return; // ignore other special keys while a menu is open
 		}
@@ -868,6 +875,11 @@ void Game::handleSpecialKey(int key) {
 		}
 		
 		glutPostRedisplay();
+		break;
+	case GLUT_KEY_F3:
+		// Toggle sound on/off
+		LOG_INFO(std::string("Sound: ") + (sound::isEnabled() ? "OFF" : "ON"));
+		sound::toggleEnabled();
 		break;
 	case GLUT_KEY_F4:
 		shadingMode = (shadingMode == ShadingMode::Smooth)

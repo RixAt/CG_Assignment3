@@ -28,6 +28,9 @@ namespace {
 	std::unordered_map<std::string, Track> gMusic;
     inline float clamp01(float v) { return std::max(0.0f, std::min(1.0f, v)); }
 
+    bool gEnabled = true;        
+	float gMasterVol = 1.0f; // Remember master volume
+
 }
 
 namespace sound {
@@ -90,17 +93,61 @@ namespace sound {
         return (it != gMusic.end() && it->second.sound && !it->second.sound->isFinished());
     }
 
-    void setMasterVolume(float volume) {
+ /*   void setMasterVolume(float volume) {
         if (engine) engine->setSoundVolume(clamp01(volume));
-    }
+    }*/
 
     void playSFX(const std::string& path, float volume) {
-        if (!engine) return;
+        if (!engine || !gEnabled) return;
         if (auto* s = engine->play2D(path.c_str(), false, false, true)) {
             s->setVolume(clamp01(volume));
             s->drop();
         }
     }
+
+    void sound::setMasterVolume(float volume) {
+        gMasterVol = clamp01(volume);
+        if (engine && gEnabled) {
+            engine->setSoundVolume(gMasterVol);
+        }
+    }
+
+    void sound::setEnabled(bool enabled) {
+        gEnabled = enabled;
+        if (!engine) return;
+
+        if (!gEnabled) {
+            // mute everything + pause looping tracks
+            engine->setSoundVolume(0.0f);
+
+            for (auto& entry : gMusic) {
+                auto& track = entry.second;
+                if (track.sound)
+                    track.sound->setIsPaused(true);
+            }
+        }
+        else {
+            // restore volume + resume looping tracks
+            engine->setSoundVolume(gMasterVol);
+
+            for (auto& entry : gMusic) {
+                auto& track = entry.second;
+                if (track.sound)
+                    track.sound->setIsPaused(false);
+            }
+        }
+    }
+
+
+    void sound::toggleEnabled() {
+        setEnabled(!gEnabled);
+    }
+
+    bool sound::isEnabled() {
+        return gEnabled;
+    }
+
+
 
 
 } // namespace sound
