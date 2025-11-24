@@ -20,6 +20,7 @@
 #define TEXTURE_H
 
 #include <string>
+#include <GL/glew.h>
 #include <GL/glut.h>
 #include "logger.h"
 

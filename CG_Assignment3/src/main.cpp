@@ -26,6 +26,7 @@
 */
 // ====================================================================
 // ====================================================================
+#include <GL/glew.h>
 #include <GL/glut.h>
 #include <GL/freeglut_std.h>
 #include <iostream>
@@ -174,6 +175,8 @@ int main(int argc, char** argv) {
 	LOGI("Vendor: " << glGetString(GL_VENDOR));
 	LOGI("Renderer: " << glGetString(GL_RENDERER));
 	LOGI("Version: " << glGetString(GL_VERSION));
+
+	glewInit();
 
 	LOG_INFO("Calling game.init()");
 	game.init();

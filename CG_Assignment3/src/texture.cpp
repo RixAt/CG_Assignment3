@@ -71,13 +71,12 @@ bool Texture::loadFromFile(const std::string& path, bool generateMipmaps) {
 		std::cerr << "GL ERROR after glTexImage2D: " << err << "\n";
 	}
 
-	// Mipmap generation is not supported by Windows by default (and I dont feel like tackling this right now)
-	//if (generateMipmaps) {
-	//	//glGenerateMipmap(GL_TEXTURE_2D);
-	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	//} else {
+	if (generateMipmaps) {
+		glGenerateMipmap(GL_TEXTURE_2D);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	} else {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	/*}*/
+	}
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 

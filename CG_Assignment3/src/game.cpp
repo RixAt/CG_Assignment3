@@ -96,12 +96,12 @@ void Game::init() {
 	textures.preload("assets/textures/skybox/front.png");
 	textures.preload("assets/textures/skybox/back.png");
 
-	skyboxTex[0] = &textures.get("assets/textures/skybox/right.png");
-	skyboxTex[1] = &textures.get("assets/textures/skybox/left.png");
-	skyboxTex[2] = &textures.get("assets/textures/skybox/top.png");
-	skyboxTex[3] = &textures.get("assets/textures/skybox/bottom.png");
-	skyboxTex[4] = &textures.get("assets/textures/skybox/front.png");
-	skyboxTex[5] = &textures.get("assets/textures/skybox/back.png");
+	skyboxTex[0] = &textures.get("assets/textures/skybox/right.png", false);
+	skyboxTex[1] = &textures.get("assets/textures/skybox/left.png", false);
+	skyboxTex[2] = &textures.get("assets/textures/skybox/top.png", false);
+	skyboxTex[3] = &textures.get("assets/textures/skybox/bottom.png", false);
+	skyboxTex[4] = &textures.get("assets/textures/skybox/front.png", false);
+	skyboxTex[5] = &textures.get("assets/textures/skybox/back.png", false);
 
 	Texture* robotTex = &textures.get("assets/textures/robot_diffuse.png");
 

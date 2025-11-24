@@ -116,7 +116,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>./lib;$(ProjectDir)\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>freeglut.lib;OpenGl32.lib;assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freeglut.lib;OpenGl32.lib;assimp-vc143-mt.lib;glew32.lib;glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -133,7 +133,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>./lib;$(ProjectDir)\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>freeglut.lib;OpenGl32.lib;assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freeglut.lib;OpenGl32.lib;assimp-vc143-mt.lib;glew32.lib;glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -145,7 +145,10 @@
     <ClInclude Include="include\GL\freeglut.h" />
     <ClInclude Include="include\GL\freeglut_ext.h" />
     <ClInclude Include="include\GL\freeglut_std.h" />
+    <ClInclude Include="include\GL\glew.h" />
     <ClInclude Include="include\GL\glut.h" />
+    <ClInclude Include="include\GL\glxew.h" />
+    <ClInclude Include="include\GL\wglew.h" />
     <ClInclude Include="include\intro_menu.hpp" />
     <ClInclude Include="include\IrrKlang\irrKlang.h" />
     <ClInclude Include="include\logger.h" />

@@ -22,6 +22,7 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <GL/glew.h>
 #include <GL/glut.h>
 #include "utilities.hpp"
 #include "texture_manager.hpp"

@@ -45,7 +45,7 @@ Texture& TextureManager::get(const std::string& path, bool generateMipmaps) {
             m_default = std::make_unique<Texture>();
             m_default->loadFromFile("assets/textures/default_texture.png", false);
         }
-        m_cache[path] = nullptr;
+        //m_cache[path] = nullptr;
 
         return *m_default;
     }

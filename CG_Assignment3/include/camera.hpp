@@ -19,6 +19,7 @@
 #ifndef CAMERA_HPP
 #define CAMERA_HPP
 
+#include <GL/glew.h>
 #include <GL/glut.h>
 #include "utilities.hpp"
 #include <algorithm>

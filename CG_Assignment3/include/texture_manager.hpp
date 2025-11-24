@@ -30,9 +30,9 @@
 
 class TextureManager {
 public:
-	Texture& get(const std::string& path, bool generateMipmaps = false);
+	Texture& get(const std::string& path, bool generateMipmaps = true);
 
-	bool preload(const std::string& path, bool generateMipmaps = false);
+	bool preload(const std::string& path, bool generateMipmaps = true);
 
 	void clear();
 

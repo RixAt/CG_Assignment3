@@ -22,6 +22,7 @@
 #ifndef RENDER_UTIL_HPP
 #define RENDER_UTIL_HPP
 
+#include <GL/glew.h>
 #include <GL/glut.h>
 #include "utilities.hpp"
 #include "camera.hpp"
