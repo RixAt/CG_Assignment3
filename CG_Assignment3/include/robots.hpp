@@ -62,17 +62,19 @@ private:
 	float heading = 0.0f;       // current yaw
 	Vector3 velocity{ 0,0,0 };
 
-	// Random waypoint mode (optional)
+	// Random waypoint mode
 	Vector3 waypoint{ 0,0,0 };
 	float waypointRadius = 10.0f;
 	float arenaHalfSize = 200.0f; // keep them inside ground
-
 
 	// Body part helpers
 	void drawTorso(RenderMode mode) const;
 	void drawHead(RenderMode mode)  const;
 	void drawArm(RenderMode mode, bool isLeftSide) const;
 	void drawLeg(RenderMode mode, bool isLeftSide) const;
+
+	Texture* m_texture = nullptr;
+	
 public:
 	// Ctors
 	// Default ctor
@@ -103,6 +105,9 @@ public:
 	void toggleDance() {
 		danceEnabled = !danceEnabled;
 	}
+
+	void setTexture(Texture* t) { m_texture = t; };
+	bool isTextured() const { return m_texture != nullptr; }
 
 };
 

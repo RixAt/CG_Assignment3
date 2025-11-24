@@ -44,6 +44,54 @@ void DrawCube(RenderMode mode, float size) {
 	glPopAttrib();
 }
 
+void DrawTexturedCube() {
+	glBegin(GL_QUADS);
+
+	// +Z
+	glNormal3f(0, 0, 1);
+	glTexCoord2f(0, 0); glVertex3f(-0.5, -0.5, 0.5);
+	glTexCoord2f(1, 0); glVertex3f(0.5, -0.5, 0.5);
+	glTexCoord2f(1, 1); glVertex3f(0.5, 0.5, 0.5);
+	glTexCoord2f(0, 1); glVertex3f(-0.5, 0.5, 0.5);
+
+	// -Z
+	glNormal3f(0, 0, -1);
+	glTexCoord2f(0, 0); glVertex3f(0.5, -0.5, -0.5);
+	glTexCoord2f(1, 0); glVertex3f(-0.5, -0.5, -0.5);
+	glTexCoord2f(1, 1); glVertex3f(-0.5, 0.5, -0.5);
+	glTexCoord2f(0, 1); glVertex3f(0.5, 0.5, -0.5);
+
+	// +X
+	glNormal3f(1, 0, 0);
+	glTexCoord2f(0, 0); glVertex3f(0.5, -0.5, 0.5);
+	glTexCoord2f(1, 0); glVertex3f(0.5, -0.5, -0.5);
+	glTexCoord2f(1, 1); glVertex3f(0.5, 0.5, -0.5);
+	glTexCoord2f(0, 1); glVertex3f(0.5, 0.5, 0.5);
+
+	// -X
+	glNormal3f(-1, 0, 0);
+	glTexCoord2f(0, 0); glVertex3f(-0.5, -0.5, -0.5);
+	glTexCoord2f(1, 0); glVertex3f(-0.5, -0.5, 0.5);
+	glTexCoord2f(1, 1); glVertex3f(-0.5, 0.5, 0.5);
+	glTexCoord2f(0, 1); glVertex3f(-0.5, 0.5, -0.5);
+
+	// +Y
+	glNormal3f(0, 1, 0);
+	glTexCoord2f(0, 0); glVertex3f(-0.5, 0.5, 0.5);
+	glTexCoord2f(1, 0); glVertex3f(0.5, 0.5, 0.5);
+	glTexCoord2f(1, 1); glVertex3f(0.5, 0.5, -0.5);
+	glTexCoord2f(0, 1); glVertex3f(-0.5, 0.5, -0.5);
+
+	// -Y
+	glNormal3f(0, -1, 0);
+	glTexCoord2f(0, 0); glVertex3f(-0.5, -0.5, -0.5);
+	glTexCoord2f(1, 0); glVertex3f(0.5, -0.5, -0.5);
+	glTexCoord2f(1, 1); glVertex3f(0.5, -0.5, 0.5);
+	glTexCoord2f(0, 1); glVertex3f(-0.5, -0.5, 0.5);
+
+	glEnd();
+}
+
 void DrawSphere(RenderMode mode, float radius) {
 	glPushAttrib(GL_CURRENT_BIT | GL_POLYGON_BIT | GL_POINT_BIT | GL_ENABLE_BIT | GL_LINE_BIT);
 
@@ -62,6 +110,45 @@ void DrawSphere(RenderMode mode, float radius) {
 	}
 
 	glPopAttrib();
+}
+
+void DrawTexturedSphere(float radius) {
+	int slices = 16;
+	int stacks = 16;
+
+	for (int i = 0; i < stacks; ++i) {
+		float v0 = (float)i / stacks;
+		float v1 = (float)(i + 1) / stacks;
+
+		float phi0 = v0 * 3.1415926f;   // 0 -> PI
+		float phi1 = v1 * 3.1415926f;
+
+		float y0 = cosf(phi0);
+		float y1 = cosf(phi1);
+
+		float r0 = sinf(phi0);
+		float r1 = sinf(phi1);
+
+		glBegin(GL_QUAD_STRIP);
+		for (int j = 0; j <= slices; ++j) {
+			float u = (float)j / slices;
+			float theta = u * 2.0f * 3.1415926f; // 0 -> 2PI
+
+			float x = cosf(theta);
+			float z = sinf(theta);
+
+			// Vertex on stack i
+			glNormal3f(x * r0, y0, z * r0);
+			glTexCoord2f(u, 1.0f - v0);
+			glVertex3f(radius * x * r0, radius * y0, radius * z * r0);
+
+			// Vertex on stack i+1
+			glNormal3f(x * r1, y1, z * r1);
+			glTexCoord2f(u, 1.0f - v1);
+			glVertex3f(radius * x * r1, radius * y1, radius * z * r1);
+		}
+		glEnd();
+	}
 }
 
 void DrawPlane(RenderMode mode, float width, float depth, const Vector3& color) {

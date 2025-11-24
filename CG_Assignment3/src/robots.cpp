@@ -85,7 +85,13 @@ Robot::Robot(const Vector3& startPos, float r)
 void Robot::drawHead(RenderMode mode) const {
 	glPushMatrix();
 		glTranslatef(0.0f, 6.0f, 0.0f);
-		DrawSphere(mode, 2.0f);
+		if (isTextured() && mode == RenderMode::Solid) {
+			DrawTexturedSphere(2.0f);
+		}
+		else {
+			DrawSphere(mode, 2.0f);
+		}
+		
 	glPopMatrix();
 }
 
@@ -93,7 +99,12 @@ void Robot::drawHead(RenderMode mode) const {
 void Robot::drawTorso(RenderMode mode) const {
 	glPushMatrix();
 		glScalef(5.0f, 8.0f, 3.0f);
-		DrawCube(mode);
+		if (isTextured() && mode == RenderMode::Solid) {
+			DrawTexturedCube();
+		}
+		else {
+			DrawCube(mode);
+		}
 	glPopMatrix();
 }
 
@@ -113,14 +124,24 @@ void Robot::drawArm(RenderMode mode, bool isLeftSide) const {
 		glPushMatrix();
 			glTranslatef(0.0f, -2.0f, 0.0f);
 			glScalef(2.0f, 4.0f, 2.0f);
-			DrawCube(mode);
+			if (isTextured() && mode == RenderMode::Solid) {
+				DrawTexturedCube();
+			}
+			else {
+				DrawCube(mode);
+			}
 		glPopMatrix();
 
 		// Lower arm
 		glPushMatrix();
 			glTranslatef(0.0f, -4.0f, 0.0f);
 			glScalef(1.5f, 3.5f, 1.5f);
-			DrawCube(mode);
+			if (isTextured() && mode == RenderMode::Solid) {
+				DrawTexturedCube();
+			}
+			else {
+				DrawCube(mode);
+			}
 		glPopMatrix();
 
 	glPopMatrix();
@@ -141,14 +162,24 @@ void Robot::drawLeg(RenderMode mode, bool isLeftSide) const {
 		glPushMatrix();
 			glTranslatef(0.0f, -3.0f, 0.0f);
 			glScalef(2.0f, 6.0f, 2.0f);
-			DrawCube(mode);
+			if (isTextured() && mode == RenderMode::Solid) {
+				DrawTexturedCube();
+			}
+			else {
+				DrawCube(mode);
+			}
 		glPopMatrix();
 		
 		// Lower leg
 		glPushMatrix();
 			glTranslatef(0.0f, -6.0f, 0.0f);
 			glScalef(1.5f, 4.0f, 1.5f);
-			DrawCube(mode);
+			if (isTextured() && mode == RenderMode::Solid) {
+				DrawTexturedCube();
+			}
+			else {
+				DrawCube(mode);
+			}
 		glPopMatrix();
 
 	glPopMatrix();
@@ -217,6 +248,16 @@ void Robot::update(float dt) {
 void Robot::draw(RenderMode mode) const {
 	if (!alive) return; // Skip drawing if not alive
 
+	bool texOn = (m_texture && m_texture->id() != 0 && mode == RenderMode::Solid);
+
+	if (texOn) {
+		glEnable(GL_TEXTURE_2D);
+		m_texture->bind();
+		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		glColor3f(1, 1, 1);
+	}
+
+
 	glPushMatrix();
 		glTranslatef(position.x, position.y, position.z);
 		glTranslatef(0.0f, ROBOT_MODEL_Y_OFFSET, 0.0f);
@@ -228,7 +269,9 @@ void Robot::draw(RenderMode mode) const {
 			glLineWidth(1.0f);
 			break;
 		case RenderMode::Solid:
-			glColor3f(color.x, color.y, color.z);
+			if (!texOn) {
+				glColor3f(color.x, color.y, color.z);
+			}
 			break;
 		case RenderMode::Vertices:
 			glColor3f(1.0f, 1.0f, 1.0f);
@@ -255,6 +298,12 @@ void Robot::draw(RenderMode mode) const {
 		glPopMatrix();
 
 	glPopMatrix();
+
+	if (texOn) {
+		m_texture->unbind();
+		glDisable(GL_TEXTURE_2D);
+	}
+
 }
 
 // drawColliderDebug(): Draws the robot's collision sphere for debugging

@@ -34,6 +34,7 @@
 #include "intro_menu.hpp"
 #include "roundover_menu.hpp"
 #include "texture_manager.hpp"
+#include "model.h"
 
 // Forward declarations
 struct Vector3;
@@ -293,6 +294,9 @@ private:
 	RoundOverMenu g_roundOverMenu;
 
 	mutable TextureManager textures;
+
+	Model m_importedModel;
+	bool m_showImportedModel = true;
 };
 
 

@@ -88,6 +88,21 @@ void Game::init() {
 
 	textures.loadDefault("assets/textures/default_texture.png");
 	textures.preload("assets/textures/ground.jpg");
+	textures.preload("assets/textures/robot_diffuse.png");
+
+	Texture* robotTex = &textures.get("assets/textures/robot_diffuse.png");
+
+	bool ok = m_importedModel.load("assets/models/barrel/Barrel_LP001.fbx", textures);
+	if (!ok) {
+		LOG_WARN("Barrel model failed to load, continuing without it.");
+	}
+	else {
+		LOG_INFO("Barrel model loaded successfully.");
+	}
+	m_importedModel.position = Vector3(15.f, 0.f, -10.f); // somewhere visible
+	m_importedModel.scale = 0.25f; 
+	m_importedModel.rotationDegrees = Vector3(0.f, 90.f, 0.f);
+
 
 	// Spawns ten robots at random XY positions on ground plane
 	for (int i = 0; i < 10; ++i) {
@@ -98,6 +113,10 @@ void Game::init() {
 		robots.push_back(new Robot(spawnPos,11.0f));
 	}
 	LOGI("Spawned robots count=" << robots.size());
+
+	for (auto& r : robots) {
+		r->setTexture(robotTex);
+	}
 
 	// Prepare bullets pool to reduce vector growth
 	bullets.reserve(maxBullets);
@@ -120,6 +139,7 @@ void Game::init() {
 void Game::update(float dt) {
 	// Early out if showing intro or round over
 	if (gameState == GameState::ShowIntro) return;
+	if (gameState == GameState::RoundOver) return;
 	if (gameState == GameState::RoundOver) return;
 	if (gameState == GameState::Menu) return;
 
@@ -221,6 +241,10 @@ void Game::drawWorld() const {
 		if (showColliders) {
 			r->drawColliderDebug();
 		}
+	}
+
+	if (m_showImportedModel) {
+		m_importedModel.draw(g_renderMode);
 	}
 
 }

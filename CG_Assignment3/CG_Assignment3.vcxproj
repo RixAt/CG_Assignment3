@@ -151,6 +151,7 @@
     <ClInclude Include="include\logger.h" />
     <ClInclude Include="include\menu.hpp" />
     <ClInclude Include="include\menu_manager.hpp" />
+    <ClInclude Include="include\model.h" />
     <ClInclude Include="include\pause_menu.hpp" />
     <ClInclude Include="include\render_util.hpp" />
     <ClInclude Include="include\robots.hpp" />
@@ -170,6 +171,7 @@
     <ClCompile Include="src\logger.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\menu.cpp" />
+    <ClCompile Include="src\model.cpp" />
     <ClCompile Include="src\pause_menu.cpp" />
     <ClCompile Include="src\render_util.cpp" />
     <ClCompile Include="src\robots.cpp" />
