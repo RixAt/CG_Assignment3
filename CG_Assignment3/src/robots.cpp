@@ -254,7 +254,8 @@ void Robot::draw(RenderMode mode) const {
 		glEnable(GL_TEXTURE_2D);
 		m_texture->bind();
 		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-		glColor3f(1, 1, 1);
+		//glColor3f(1, 1, 1);
+		glColor3f(1.0f, 0.15f, 0.15f);
 	}
 
 

@@ -1133,7 +1133,7 @@ void Game::toggleDebugMode() {
 
 void Game::setupLights() const {
 	// a subtle global ambient so nothing is pitch black
-	GLfloat globalAmbient[] = { 0.12f, 0.12f, 0.12f, 1.0f };
+	GLfloat globalAmbient[] = { 0.20f, 0.20f, 0.20f, 1.0f };
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, globalAmbient);
 
 
@@ -1156,7 +1156,7 @@ void Game::setupLights() const {
 void Game::applyDirectionalLight() const {
 	GLfloat dirPos[] = { -0.4f, 1.0f, 0.3f, 0.0f }; // w = 0
 
-	GLfloat ambient[] = { 0.30f, 0.30f, 0.35f, 1.0f };
+	GLfloat ambient[] = { 0.35f, 0.35f, 0.38f, 1.0f };
 	GLfloat diffuse[] = { 0.95f, 0.95f, 1.05f, 1.0f }; // slightly cool
 	GLfloat specular[] = { 0.35f, 0.35f, 0.40f, 1.0f };
 
@@ -1198,19 +1198,20 @@ void Game::applyPointLight() const {
 	GLfloat dir[] = { forward.x, forward.y, forward.z }; // points where camera looks
 	glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, dir);
 
-	glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 25.0f);   // cone angle (degrees). 10–25 is “flashlight”
-	glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 12.0f); // concentration. higher = tighter center hotspot
+	glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 35.0f);  
+	glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 6.0f);
 
-	// distance falloff so it feels like a real beam
-	glLightf(GL_LIGHT1, GL_CONSTANT_ATTENUATION, 0.8f);
-	glLightf(GL_LIGHT1, GL_LINEAR_ATTENUATION, 0.02f);
-	glLightf(GL_LIGHT1, GL_QUADRATIC_ATTENUATION, 0.005f);
+
+	glLightf(GL_LIGHT1, GL_CONSTANT_ATTENUATION, 1.0f);
+	glLightf(GL_LIGHT1, GL_LINEAR_ATTENUATION, 0.005f);
+	glLightf(GL_LIGHT1, GL_QUADRATIC_ATTENUATION, 0.0008f);
+
 
 	// ---- Weak fill light using GL_LIGHT2 ----
 	GLfloat fillPos[] = { 0.0f, 15.0f, 0.0f, 1.0f };
 
-	GLfloat fillAmbient[] = { 0.12f, 0.12f, 0.12f, 1.0f };
-	GLfloat fillDiffuse[] = { 0.18f, 0.18f, 0.22f, 1.0f }; // subtle bluish fill
+	GLfloat fillAmbient[] = { 0.18f, 0.18f, 0.18f, 1.0f };
+	GLfloat fillDiffuse[] = { 0.30f, 0.30f, 0.35f, 1.0f };
 	GLfloat fillSpecular[] = { 0.0f,  0.0f,  0.0f,  1.0f };
 
 	glLightfv(GL_LIGHT2, GL_POSITION, fillPos);
@@ -1219,8 +1220,8 @@ void Game::applyPointLight() const {
 	glLightfv(GL_LIGHT2, GL_SPECULAR, fillSpecular);
 
 	glLightf(GL_LIGHT2, GL_CONSTANT_ATTENUATION, 1.0f);
-	glLightf(GL_LIGHT2, GL_LINEAR_ATTENUATION, 0.02f);
-	glLightf(GL_LIGHT2, GL_QUADRATIC_ATTENUATION, 0.003f);
+	glLightf(GL_LIGHT2, GL_LINEAR_ATTENUATION, 0.0f);
+	glLightf(GL_LIGHT2, GL_QUADRATIC_ATTENUATION, 0.0f);
 
 }
 
