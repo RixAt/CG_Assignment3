@@ -119,8 +119,9 @@ int bulletsUpdate(std::vector<Bullet>& pool,
 	int& score,
 	float distBonusMultiplier,
 	int baseScore,
-	std::vector<ImpactFX>* impacts
-) {
+	std::vector<ImpactFX>* impacts,
+	std::vector<Barrel*>* barrels) 
+{
 	int hits = 0;
 
 	for (auto& b : pool) {
@@ -157,6 +158,35 @@ int bulletsUpdate(std::vector<Bullet>& pool,
 				b.deactivate();
 				b.markScored();
 				break; // Bullet can only hit one robot
+			}
+		}
+
+		if (barrels) {
+			for (auto& br : *barrels) {
+				if (!br->isActive()) continue;
+
+				Vector3 diff = b.pos() - br->getPosition();
+				diff.y = 0.0f; // ignore vertical difference
+				float distXZ = diff.length();
+
+				float hitRadius = br->exploded ? br->explosionRadius : br->radius;
+
+				if (distXZ < br->radius) {
+
+					// Mark barrel explosion
+					br->explode();
+
+					// Impact FX
+					if (impacts)
+						effectsSpawnImpact(*impacts, br->getPosition());
+
+					sound::playSFX("assets/audio/explosion.ogg", 0.8f);
+					score += 150;
+
+					b.deactivate();
+					b.markScored();
+					break;
+				}
 			}
 		}
 	}

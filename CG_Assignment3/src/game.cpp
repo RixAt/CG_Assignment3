@@ -105,17 +105,36 @@ void Game::init() {
 
 	Texture* robotTex = &textures.get("assets/textures/robot_diffuse.png");
 
-	bool ok = m_importedModel.load("assets/models/barrel/Barrel_LP001.fbx", textures);
+	//bool ok = m_importedModel.load("assets/models/barrel/Barrel_LP001.fbx", textures);
+	//if (!ok) {
+	//	LOG_WARN("Barrel model failed to load, continuing without it.");
+	//}
+	//else {
+	//	LOG_INFO("Barrel model loaded successfully.");
+	//}
+	//m_importedModel.position = Vector3(15.f, 0.f, -10.f); // somewhere visible
+	//m_importedModel.scale = 0.25f; 
+	//m_importedModel.rotationDegrees = Vector3(0.f, 90.f, 0.f);
+
+
+	// Load barrel model once
+	bool ok = m_barrelModel.load("assets/models/barrel/Barrel_LP001.fbx", textures);
 	if (!ok) {
-		LOG_WARN("Barrel model failed to load, continuing without it.");
+		LOG_WARN("Barrel model failed to load.");
 	}
 	else {
 		LOG_INFO("Barrel model loaded successfully.");
+		Barrel::setSharedModel(&m_barrelModel);
 	}
-	m_importedModel.position = Vector3(15.f, 0.f, -10.f); // somewhere visible
-	m_importedModel.scale = 0.25f; 
-	m_importedModel.rotationDegrees = Vector3(0.f, 90.f, 0.f);
 
+	for (int i = 0; i < 5; ++i) {
+		float x = (std::rand() % 200 - 100);
+		float z = (std::rand() % 200 - 100);
+		Vector3 spawnPos(x, 0.0f, z);
+
+		m_barrels.push_back(new Barrel(spawnPos));
+	}
+	LOGI("Spawned barrels count= " + m_barrels.size());
 
 	// Spawns ten robots at random XY positions on ground plane
 	for (int i = 0; i < 10; ++i) {
@@ -183,11 +202,15 @@ void Game::update(float dt) {
 			r->update(dt);
 		}
 	}
+
+	for (auto* b : m_barrels)
+		b->update(dt);
+
 	// Update effects
 	effectsUpdate(impacts, dt);
 	
 	// Advance bullets and check for hits
-	bulletsUpdate(bullets, dt, robots, robotsKilled, shotsHit, score, 3.0f, 100, &impacts);
+	bulletsUpdate(bullets, dt, robots, robotsKilled, shotsHit, score, 3.0f, 100, &impacts, &m_barrels);
 
 	// Check if any robots are still alive
 	bool anyAlive = false;
@@ -275,9 +298,13 @@ void Game::drawWorld() const {
 		}
 	}
 
-	if (m_showImportedModel) {
+	for (auto* b : m_barrels)
+		b->draw(g_renderMode);
+
+
+	/*if (m_showImportedModel) {
 		m_importedModel.draw(g_renderMode);
-	}
+	}*/
 
 }
 
@@ -969,6 +996,19 @@ void Game::resetRound() {
 	for (auto& r : robots) {
 		r->setTexture(robotTex);
 	}
+
+	for (auto* b : m_barrels) delete b;
+	m_barrels.clear();
+
+	for (int i = 0; i < 5; ++i) {
+		float x = (std::rand() % 200 - 100);
+		float z = (std::rand() % 200 - 100);
+		Vector3 spawnPos(x, 0.0f, z);
+
+		m_barrels.push_back(new Barrel(spawnPos));
+	}
+	LOGI("Spawned barrels count= " << m_barrels.size());
+	
 
 	bullets.clear();
 

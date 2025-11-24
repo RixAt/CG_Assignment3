@@ -35,6 +35,7 @@
 #include "roundover_menu.hpp"
 #include "texture_manager.hpp"
 #include "model.h"
+#include "barrel.hpp"
 
 // Forward declarations
 struct Vector3;
@@ -203,6 +204,10 @@ private:
 
 	// Impact effect list for bullet hits
 	std::vector<ImpactFX> impacts;
+
+	// Barrels in the scene
+	std::vector<Barrel*> m_barrels;
+	Model m_barrelModel;
 
 	// Maximum number of bullets in the pool
 	static constexpr size_t maxBullets = 128;

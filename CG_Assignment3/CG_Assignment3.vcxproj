@@ -137,6 +137,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="include\barrel.hpp" />
     <ClInclude Include="include\bullet.hpp" />
     <ClInclude Include="include\camera.hpp" />
     <ClInclude Include="include\effects.hpp" />
@@ -166,6 +167,7 @@
     <ClInclude Include="lib\freeglut.lib" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\barrel.cpp" />
     <ClCompile Include="src\bullet.cpp" />
     <ClCompile Include="src\camera.cpp" />
     <ClCompile Include="src\effects.cpp" />

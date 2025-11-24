@@ -30,7 +30,7 @@ struct ImpactFX {
 	float t = 0.0f; // Time elapsed
 	float ttl = 0.25f; // Time to live
 	float startR = 0.2f;
-	float endR = 2.0f;
+	float endR = 5.0f;
 	Vector3 color = Vector3(1.0f, 0.8f, 0.2f);
 	bool active() const { return t < ttl; };
 
